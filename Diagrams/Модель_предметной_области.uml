@@ -1,0 +1,37 @@
+@startuml
+actor "Родитель/Врач" as ParentDoctor
+actor "Пациент" as Patient
+
+box "Регистрация и авторизация" #lightblue
+    participant "Модуль регистрации" as Reg
+    participant "Модуль авторизации" as Auth
+end box
+
+box "Настройки" #lightgreen
+    participant "Модуль настроек" as Settings
+end box
+
+box "Выполнение заданий" #lightyellow
+    participant "Активность" as Activity
+    participant "Задание" as Task
+end box
+
+box "Статистика" #lightpink
+    participant "Модуль статистики" as Stat
+end box
+
+ParentDoctor -> Auth: Авторизация в приложении
+ParentDoctor -> Reg: Регистрация пациента
+ParentDoctor -> Settings: Настройка параметров заданий
+Settings -> Activity: Установка расписания сложности и количества нажатий
+Activity -> Task: Установка сложности 
+Patient -> Auth: Авторизация в приложении
+Task -> Task: Проверка кэша
+Task -> Stat: Отправка статистики из кэша
+Task -> Patient: Ожидание выполнения
+Patient -> Task: Выполнение задания
+Task -> Task: Фиксация выполнения
+Task -> Task: Ожидание окончания выполнения
+Task -> Stat: Отправка статистики
+Stat -> ParentDoctor: Получение статистики
+@enduml
