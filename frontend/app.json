@@ -1,11 +1,21 @@
 {
   "expo": {
+<<<<<<< HEAD
     "name": "ADHD",
     "slug": "ADHD",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
+=======
+    "name": "adhd-support-app",
+    "description": "Приложение помогает пациентам с СДВГ развивать самоконтроль и концентрацию через систему заданий с фиксированным графиком нажатий кнопки. Врач или родитель управляет доступом, уровнем сложности и анализирует статистику выполнения. Данные можно экспортировать в Excel/PDF.",
+    "slug": "adhd-support-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/favicon.png",
+    "scheme": "adhd",
+>>>>>>> c130cb14850ea61c08ae603689972377fdb45d3d
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,9 +23,14 @@
     },
     "android": {
       "adaptiveIcon": {
+<<<<<<< HEAD
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",
         "package": "com.adhd.adhd"
+=======
+        "foregroundImage": "./assets/images/favicon.png",
+        "backgroundColor": "#ffffff"
+>>>>>>> c130cb14850ea61c08ae603689972377fdb45d3d
       }
     },
     "web": {
@@ -23,6 +38,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+<<<<<<< HEAD
     "plugins": [
       "expo-router",
       [
@@ -35,6 +51,9 @@
         }
       ]
     ],
+=======
+    "plugins": ["expo-router"],
+>>>>>>> c130cb14850ea61c08ae603689972377fdb45d3d
     "experiments": {
       "typedRoutes": true
     }
