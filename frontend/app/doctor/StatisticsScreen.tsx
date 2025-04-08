@@ -15,12 +15,26 @@ import { AntDesign, Feather, FontAwesome } from "@expo/vector-icons";
 import ModalWindow from "@/components/ModalWindow";
 import { validateEmail } from "@/components/ValidateInputs";
 import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import api from "@/scripts/api";
 
 const StatisticsScreen: React.FC = () => {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
   const [dates, setDates] = useState({
     start: "2025-01-01",
     end: "2025-12-31",
   });
+
+  const {
+    firstname = "",
+    surname = "",
+    lastname = "",
+    login = "",
+    patientId = "",
+  } = params;
+
   const [showCalendar, setShowCalendar] = useState<"start" | "end" | null>(
     null
   );
@@ -122,13 +136,31 @@ const StatisticsScreen: React.FC = () => {
     setModalType("information");
   };
 
+  const handleSendStatistics = async () => {
+    try {
+        console.log(patientId, dates.start, dates.end)
+        const statistics = await api.getPatientStatistics(patientId, dates.start, dates.end);
+        console.log('Статистика пациента:', statistics);  
+        setModalMessage(`Статистика успешно загружена`);
+    } catch (error) {
+        console.error('Ошибка получения статистики:', error);
+        setModalMessage("Ошибка при получении статистики");
+    }
+
+    setModalType("information");
+    setModalVisible(true);
+};
+
+
   const handleModalClose = () => {
     setModalVisible(false);
   };
 
+  const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
+
   return (
     <View style={styles.container}>
-      <Header title="Слендермен Н. В." createBackButton />
+      <Header title={formattedFirstName} createBackButton />
       <View style={styles.content}>
         <View style={styles.dateSelection}>
           <View style={styles.dateWrapper}>
@@ -193,7 +225,7 @@ const StatisticsScreen: React.FC = () => {
         </View>
         {emailError && <Text style={styles.errorText}>{emailError}</Text>}
 
-        <TouchableOpacity style={styles.downloadButton}>
+         <TouchableOpacity style={styles.downloadButton} onPress={handleSendStatistics}>
           <Text style={styles.downloadText}>Скачать статистику</Text>
           <AntDesign name="download" size={20} color={Colors.primary} />
         </TouchableOpacity>

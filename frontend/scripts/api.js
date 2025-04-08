@@ -86,4 +86,15 @@ export default {
     const response = await api.get(`patient/activity/get/${userId}`);
     return response.data;
   },
+
+  getPatientStatistics: async (patientId, startDate, endDate) => {
+    const response = await api.get("/doctor/createPdf", {
+        params: {
+            patientId,   
+            startDate,   
+            endDate      
+        }
+    });
+    return response.data; 
+},
 };

@@ -11,5 +11,6 @@ router.use(checkUserRole(0));
 router.get("/get", doctorController.get);
 router.get("/patients", doctorController.getPatients);
 router.post("/register", doctorController.registerPatient);
+router.get("/createPdf", doctorController.getStatisticsFile);
 
 export default router;
