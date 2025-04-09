@@ -29,15 +29,18 @@ const TaskSettings = () => {
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 
   useEffect(() => {
-    api.getPatientActivity(id).then((response) => {
-      if (response?.activity) loadData(response.activity);
-      else
-        loadData({
-          level: 1,
-          tap_count: [10, 12],
-          selected_time: [],
-        });
-    });
+    api
+      .getPatientActivity(id)
+      .then((response) => {
+        if (response?.activity) loadData(response.activity);
+        else
+          loadData({
+            level: 1,
+            tap_count: [10, 12],
+            selected_time: [],
+          });
+      })
+      .catch((err) => {});
   }, []);
 
   const loadData = (activity: Record<string, any>) => {
