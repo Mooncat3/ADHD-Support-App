@@ -286,13 +286,13 @@ const StatisticsScreen: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundScreen },
-  content: { padding: 20, flex: 1 },
+  content: { flex: 1 },
   dateSelection: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
-    paddingHorizontal: 10,
+    marginVertical: 20,
+    paddingHorizontal: 20,
   },
   dateWrapper: { alignItems: "center", justifyContent: "center", width: "45%" },
   dateButton: {

@@ -9,7 +9,14 @@ import PatientInfoField from "@/components/PatientInfo/PatientInfoField";
 
 const PatientInfo = () => {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const params = useLocalSearchParams<{
+    firstname: string;
+    surname: string;
+    lastname: string;
+    login: string;
+    email: string;
+    id: string;
+  }>();
 
   const {
     firstname = "",
@@ -17,7 +24,6 @@ const PatientInfo = () => {
     lastname = "",
     login = "",
     email = "",
-    id = "",
   } = params;
 
   const handlePatientStatistics = () => {
@@ -34,7 +40,7 @@ const PatientInfo = () => {
   };
 
   const handlePatientAssignments = () => {
-    router.push("/doctor/TaskSettings");
+    router.push({ pathname: "/doctor/TaskSettings", params });
   };
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 

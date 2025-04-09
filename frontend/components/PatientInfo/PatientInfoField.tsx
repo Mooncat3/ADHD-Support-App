@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ToastAndroid,
   Platform,
-  Clipboard,
   Alert,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 import Feather from "@expo/vector-icons/Feather";
+import * as Clipboard from "expo-clipboard";
 
 interface PatientInfoFieldProps {
   label: string;
@@ -23,8 +23,8 @@ const PatientInfoField: React.FC<PatientInfoFieldProps> = ({
   label,
   value,
 }) => {
-  const copyToClipboard = () => {
-    Clipboard.setString(value);
+  const copyToClipboard = async () => {
+    await Clipboard.setStringAsync(value);
 
     if (Platform.OS === "android") {
       ToastAndroid.show("Скопировано в буфер обмена", ToastAndroid.SHORT);

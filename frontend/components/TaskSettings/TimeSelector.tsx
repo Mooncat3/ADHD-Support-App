@@ -3,8 +3,8 @@ import React from "react";
 import { Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 
 interface TimeSelectorProps {
-  selectedTimes: string[];
-  onSelectTime: (time: string) => void;
+  selectedTimes: number[];
+  onSelectTime: (time: number) => void;
 }
 
 const TimeSelector: React.FC<TimeSelectorProps> = ({
@@ -49,15 +49,15 @@ const TimeSelector: React.FC<TimeSelectorProps> = ({
           key={item}
           style={[
             styles.timeOption,
-            selectedTimes.includes(item)
+            selectedTimes.includes(times.indexOf(item))
               ? styles.selectedTime
               : styles.unselectedTime,
           ]}
-          onPress={() => onSelectTime(item)}
+          onPress={() => onSelectTime(times.indexOf(item))}
         >
           <Text
             style={
-              selectedTimes.includes(item)
+              selectedTimes.includes(times.indexOf(item))
                 ? styles.selectedTimeText
                 : styles.unselectedTimeText
             }

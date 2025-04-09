@@ -3,10 +3,13 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
+import checkInternetRole from '@/hooks/CheckInternetRole';
 
 export default function App() {
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
+
+  checkInternetRole();
 
   useEffect(() => {
     async function prepare() {

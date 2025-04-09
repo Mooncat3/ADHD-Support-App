@@ -81,13 +81,21 @@ export default {
     });
     return response.data;
   },
+
   patientData: async () => {
     const response = await api.get("/patient/get");
     return response.data;
   },
-  getPatientActivity: async (userId) => {
-    // throw new Error("404");
-    const response = await api.get(`patient/activity/get/${userId}`);
+
+  getPatientActivity: async (patientId) => {
+    const response = await api.get(`/doctor/activity/${patientId}`);
+    return response.data;
+  },
+
+  putPatientActivity: async (patientId, activity) => {
+    const response = await api.put(`/doctor/activity/${patientId}`, {
+      activity,
+    });
     return response.data;
   },
 

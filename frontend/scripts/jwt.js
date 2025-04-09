@@ -26,8 +26,18 @@ const deleteTokenFromSecureStore = async (key) => {
   }
 };
 
+const getRoleFromSecureStore = async () => {
+  try {
+    const role = await SecureStore.getItemAsync('role');
+    if (role) return role;
+  } catch (error) {
+    console.log("Ошибка при получении роли из SecureStore:", error);
+  }
+};
+
 export {
   storeTokenInSecureStore,
   getTokenFromSecureStore,
   deleteTokenFromSecureStore,
+  getRoleFromSecureStore
 };

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import Header from "@/components/Header";
 import TimeSelector from "@/components/TaskSettings/TimeSelector";
@@ -6,27 +6,69 @@ import CounterSection from "@/components/TaskSettings/CounterSection";
 import FooterButton from "@/components/FooterButton";
 import Footer from "@/components/Footer";
 import { Colors } from "@/constants/Colors";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import Selector from "@/components/Selector";
+import api from "@/scripts/api";
 
 const TaskSettings = () => {
   const router = useRouter();
+  const {
+    firstname = "",
+    surname = "",
+    lastname = "",
+    id = "",
+  } = useLocalSearchParams<{
+    firstname: string;
+    surname: string;
+    lastname: string;
+    id: string;
+  }>();
 
-  const [difficulty, setDifficulty] = useState<string>("simple");
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
-  const [firstSeriesCount, setFirstSeriesCount] = useState<number>(10);
-  const [secondSeriesCount, setSecondSeriesCount] = useState<number>(12);
+  const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
+
+  useEffect(() => {
+    api.getPatientActivity(id).then((response) => {
+      if (response?.activity) loadData(response.activity);
+      else
+        loadData({
+          level: 2,
+          tap_count: [10, 18],
+          selected_time: ["9", "10", "12", "18"],
+        });
+    });
+  }, []);
+
+  const loadData = (activity: Record<string, any>) => {
+    setLevel(activity.level.toString());
+    setSelectedTimes(activity.selected_time.map(Number));
+    setFirstSeriesCount(
+      Array.isArray(activity.tap_count)
+        ? activity.tap_count[0]
+        : activity.tap_count
+    );
+    if (Array.isArray(activity.tap_count))
+      setSecondSeriesCount(activity.tap_count[1]);
+  };
+
+  const [level, setLevel] = useState<string>();
+  const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
+  const [firstSeriesCount, setFirstSeriesCount] = useState<number>();
+  const [secondSeriesCount, setSecondSeriesCount] = useState<number>(1);
   const [headerUserName, setHeaderUserName] =
-    useState<string>("Смирнова Н. В.");
+    useState<string>(formattedFirstName);
 
   const handleSave = () => {
-    console.log({
-      difficulty,
-      selectedTimes,
-      firstSeriesCount,
-      secondSeriesCount,
-    });
-    router.back();
+    if (level) {
+      api.putPatientActivity(id, {
+        level: parseInt(level),
+        tap_count:
+          level === "1"
+            ? firstSeriesCount
+            : [firstSeriesCount, secondSeriesCount],
+        selected_time: selectedTimes.sort((a, b) => a - b).map(String),
+      });
+      router.back();
+    }
   };
 
   return (
@@ -34,12 +76,14 @@ const TaskSettings = () => {
       <Header title={headerUserName} />
 
       <View style={styles.content}>
-        <Selector
-          selected={difficulty}
-          onSelect={setDifficulty}
-          mainLabel="Уровень сложности"
-          keys={{ simple: "Простой", complex: "Сложный" }}
-        />
+        {level && (
+          <Selector
+            selected={level}
+            onSelect={setLevel}
+            mainLabel="Уровень сложности"
+            keys={{ "1": "Простой", "2": "Сложный" }}
+          />
+        )}
 
         <TimeSelector
           selectedTimes={selectedTimes}
@@ -52,13 +96,15 @@ const TaskSettings = () => {
           }}
         />
 
-        <CounterSection
-          firstSeriesCount={firstSeriesCount}
-          secondSeriesCount={secondSeriesCount}
-          onFirstSeriesChange={setFirstSeriesCount}
-          onSecondSeriesChange={setSecondSeriesCount}
-          difficulty={difficulty}
-        />
+        {level && firstSeriesCount !== undefined && (
+          <CounterSection
+            firstSeriesCount={firstSeriesCount}
+            secondSeriesCount={secondSeriesCount}
+            onFirstSeriesChange={setFirstSeriesCount}
+            onSecondSeriesChange={setSecondSeriesCount}
+            level={level}
+          />
+        )}
       </View>
 
       <Footer

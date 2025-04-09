@@ -40,7 +40,7 @@ const ModalWindow: React.FC<ModalWindowProps> = ({
                 style={[styles.button, styles.cancelButton]}
                 onPress={onCancel}
               >
-                <Text style={styles.buttonText}>{cancelText}</Text>
+                <Text style={styles.cancelButtonText}>{cancelText}</Text>
               </TouchableOpacity>
             )}
 
@@ -93,21 +93,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     borderRadius: 10,
     minWidth: 100,
+    alignSelf: "center",
     alignItems: "center",
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   confirmButton: {
     backgroundColor: Colors.main,
   },
   cancelButton: {
-    backgroundColor: Colors.main,
-    opacity: 0.5,
+    backgroundColor: Colors.primary,
   },
   infoButton: {
     backgroundColor: Colors.main,
-    alignSelf: "center",
   },
   buttonText: {
     color: Colors.primary,
+    fontFamily: "Montserrat-Regular",
+    fontWeight: "500",
+  },
+  cancelButtonText: {
+    color: Colors.headerText,
     fontFamily: "Montserrat-Regular",
     fontWeight: "500",
   },

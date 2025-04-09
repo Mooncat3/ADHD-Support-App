@@ -7,7 +7,7 @@ interface CounterSectionProps {
   secondSeriesCount: number;
   onFirstSeriesChange: (value: number) => void;
   onSecondSeriesChange: (value: number) => void;
-  difficulty: string;
+  level: string;
 }
 
 const CounterSection: React.FC<CounterSectionProps> = ({
@@ -15,7 +15,7 @@ const CounterSection: React.FC<CounterSectionProps> = ({
   secondSeriesCount,
   onFirstSeriesChange,
   onSecondSeriesChange,
-  difficulty,
+  level,
 }) => {
   return (
     <View style={styles.container}>
@@ -23,12 +23,12 @@ const CounterSection: React.FC<CounterSectionProps> = ({
 
       <View style={styles.countersContainer}>
         <Counter
-          label={difficulty === "complex" ? "Первая серия" : undefined}
+          label={level === "2" ? "Первая серия" : undefined}
           value={firstSeriesCount}
           setValue={onFirstSeriesChange}
         />
 
-        {difficulty === "complex" && (
+        {level === "2" && (
           <Counter
             label="Вторая серия"
             value={secondSeriesCount}

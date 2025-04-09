@@ -13,7 +13,7 @@ function generateTokens(user) {
   return { accessToken, refreshToken };
 }
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
@@ -32,12 +32,11 @@ const login = async (req, res) => {
     const tokens = generateTokens({ id: userId, role: userRole });
     return res.status(200).json(tokens);
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ detail: "Server error" });
+    next(err);
   }
 };
 
-const refresh = async (req, res) => {
+const refresh = async (req, res, next) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken)
@@ -49,8 +48,7 @@ const refresh = async (req, res) => {
       res.status(200).json(tokens);
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ detail: "Server error" });
+    next(err);
   }
 };
 
