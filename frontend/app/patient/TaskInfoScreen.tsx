@@ -47,7 +47,7 @@ const TaskInfoScreen: React.FC = () => {
         if (!user.activity) {
           const defaultActivity = {
             level: 1,
-            tap_count: [10, 12],
+            tap_count: 10,
             selected_time: [],
           };
           setActivityData(defaultActivity);
@@ -71,14 +71,11 @@ const TaskInfoScreen: React.FC = () => {
       id: `${index + 1}`,
       time: `${time.padStart(2, "0")}:00`,
       level: activity.level,
-      tap_count:
-        activity.level === 2
-          ? Array.isArray(activity.tap_count)
-            ? index % 2 === 0
-              ? activity.tap_count
-              : [activity.tap_count[1], activity.tap_count[0]]
-            : activity.tap_count
-          : activity.tap_count,
+      tap_count: Array.isArray(activity.tap_count)
+        ? index % 2 === 0
+          ? activity.tap_count
+          : [activity.tap_count[1], activity.tap_count[0]]
+        : activity.tap_count,
     }));
 
     setTaskData(tasks);
