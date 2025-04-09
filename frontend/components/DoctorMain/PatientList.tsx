@@ -95,7 +95,7 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
             >
               <View style={styles.textContainer}>
                 <Text style={styles.text}>
-                  {item.firstname} {item.surname} {item.lastname}
+                  {item.surname} {item.firstname} {item.lastname}
                 </Text>
               </View>
               <AntDesign name="right" size={24} color={Colors.secondary} />
