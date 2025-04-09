@@ -39,7 +39,11 @@ api.interceptors.response.use(
         return api.request(error.config);
       }
     } else {
-      if (axios.isAxiosError(error)) throw new Error(error.response?.status);
+      if (axios.isAxiosError(error)) {
+        const axErr = new Error(error.message);
+        axErr.status = error.status;
+        throw axErr;
+      }
       throw new Error("Неизвестная ошибка");
     }
     return Promise.reject(error);
@@ -70,10 +74,10 @@ export default {
   },
 
   registerPatient: async (registrationData) => {
-    const passwordHash = await sha256(registrationData.password);
+    // const passwordHash = await sha256(registrationData.password);
     const response = await api.post("/doctor/register", {
       ...registrationData,
-      password: passwordHash,
+      // password: passwordHash,
     });
     return response.data;
   },
@@ -88,6 +92,7 @@ export default {
   },
 
   getPatientStatistics: async (patientId, startDate, endDate) => {
+    try {
     const response = await api.get("/doctor/createPdf", {
         params: {
             patientId,   
@@ -96,5 +101,9 @@ export default {
         }
     });
     return response.data; 
+    }
+    catch (error) {
+      return error.message;
+    }
 },
 };

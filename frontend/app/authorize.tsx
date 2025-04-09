@@ -90,6 +90,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
             });
         })
         .catch((error) => {
+          console.log(error.message);
           setError(checkCode(error.message));
         });
     } else {
