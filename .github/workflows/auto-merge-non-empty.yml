@@ -1,15 +1,15 @@
-name: Auto Merge Only Non-Empty Commits to Main
+name: Smart Merge (Cherry-pick Non-Empty Commits)
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  cherry_pick_and_merge:
+  smart_merge:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout PR branch with full history
+      - name: Checkout PR branch
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -17,30 +17,31 @@ jobs:
 
       - name: Set up Git identity
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
 
       - name: Fetch main
         run: git fetch origin main
 
       - name: Create temp branch from main
         run: |
-          git checkout -B tmp-non-empty-merge origin/main
+          git checkout -B tmp-smart-merge origin/main
 
-      - name: Cherry-pick only non-empty commits
+      - name: Cherry-pick non-empty commits from PR
         run: |
-          COMMITS=$(git rev-list --reverse origin/main..origin/${{ github.head_ref }})
-
-          for COMMIT in $COMMITS; do
+          PR_COMMITS=$(git rev-list --reverse origin/main..origin/${{ github.head_ref }})
+          for COMMIT in $PR_COMMITS; do
             if [ "$(git show --pretty="" --name-only $COMMIT | wc -l)" -gt 0 ]; then
-              echo "✅ Cherry-pick: $COMMIT"
-              git cherry-pick "$COMMIT"
+              echo "✅ Cherry-picking $COMMIT"
+              git cherry-pick $COMMIT
             else
-              echo "⏭ Пустой коммит пропущен: $COMMIT"
+              echo "⏭️ Skipping empty commit $COMMIT"
             fi
           done
 
-      - name: Push directly to main
+      - name: Push changes to main
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git push origin HEAD:main
-          echo "🚀 Изменения с непустыми коммитами отправлены в main"
+          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+          git push origin tmp-smart-merge:main
