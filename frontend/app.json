@@ -4,6 +4,7 @@
     "description": "Приложение помогает пациентам с СДВГ развивать самоконтроль и концентрацию через систему заданий с фиксированным графиком нажатий кнопки. Врач или родитель управляет доступом, уровнем сложности и анализирует статистику выполнения. Данные можно экспортировать в Excel/PDF.",
     "slug": "stay-focused",
     "version": "1.0.0",
+    "owner": "mooncat3",
     "orientation": "portrait",
     "icon": "./assets/images/favicon_new.png",
     "scheme": "adhd",
@@ -30,6 +31,11 @@
     "plugins": ["expo-router", "expo-secure-store"],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ba840e78-8448-470c-b644-a054256c8728"
+      }
     }
   }
 }
