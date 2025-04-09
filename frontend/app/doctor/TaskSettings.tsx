@@ -24,7 +24,7 @@ const TaskSettings = () => {
     lastname: string;
     id: string;
   }>();
-  const [isLoading, setLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 
@@ -52,7 +52,7 @@ const TaskSettings = () => {
       if (Array.isArray(activity.tap_count))
         setSecondSeriesCount(activity.tap_count[1]);
     }
-    setLoading(false);
+    setIsLoading(false);
   };
 
   const [level, setLevel] = useState<string>();
