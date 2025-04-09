@@ -3,7 +3,7 @@ import {
   storeTokenInSecureStore,
   getTokenFromSecureStore,
 } from "@/scripts/jwt";
-import { sha256 } from "react-native-sha256";
+import * as Crypto from "expo-crypto";
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -70,7 +70,10 @@ export default {
   },
 
   registerPatient: async (registrationData) => {
-    const passwordHash = await sha256(registrationData.password);
+    const passwordHash = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      registrationData.password
+    );
     const response = await api.post("/doctor/register", {
       ...registrationData,
       password: passwordHash,
