@@ -10,9 +10,13 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stayfocused.stayfocused",
+      "buildNumber": "1.0.0"
     },
     "android": {
+      "package": "com.stayfocused.stayfocused",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/favicon_new.png",
         "backgroundColor": "#ffffff"
@@ -23,10 +27,7 @@
       "output": "static",
       "favicon": "./assets/images/favicon_new.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store"
-    ],
+    "plugins": ["expo-router", "expo-secure-store"],
     "experiments": {
       "typedRoutes": true
     }
