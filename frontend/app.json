@@ -20,9 +20,8 @@
     },
     "android": {
       "package": "com.stayfocused.stayfocused",
-      "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/favicon.png",
+        "foregroundImage": "./assets/images/adaptive-favicon.png",
         "backgroundColor": "#ffffff"
       }
     },
@@ -34,12 +33,6 @@
     "plugins": ["expo-router", "expo-secure-store"],
     "experiments": {
       "typedRoutes": true
-    },
-    "doctor": {
-      "reactNativeDirectoryCheck": {
-        "exclude": ["react-native-responsive-fontsize", "expo-env"],
-        "listUnknownPackages": false
-      }
     },
     "extra": {
       "eas": {

@@ -25,10 +25,13 @@
     },
     "production": {
       "android": {
-        "image": "latest"
+        "image": "latest",
+        "node": "22.14.0",
+        "buildType": "apk"
       },
       "ios": {
-        "image": "latest"
+        "image": "latest",
+        "node": "22.14.0"
       }
     }
   }
