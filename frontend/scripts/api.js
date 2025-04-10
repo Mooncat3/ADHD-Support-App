@@ -81,7 +81,7 @@ export default {
     );
     const response = await api.post("/doctor/register", {
       ...registrationData,
-      // password: passwordHash,
+      password: passwordHash,
     });
     return response.data;
   },
@@ -93,13 +93,6 @@ export default {
 
   getPatientActivity: async (patientId) => {
     const response = await api.get(`/doctor/activity/${patientId}`);
-    return response.data;
-  },
-
-  putPatientActivity: async (patientId, activity) => {
-    const response = await api.put(`/doctor/activity/${patientId}`, {
-      activity,
-    });
     return response.data;
   },
 

@@ -16,9 +16,7 @@ import ModalWindow from "@/components/ModalWindow";
 import { validateEmail } from "@/components/ValidateInputs";
 import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import api from "@/scripts/api";
-import * as SAF from 'expo-file-system';
-import * as FileSystem from 'expo-file-system';
+import { handleGetStatistics } from "@/components/StatisticsScreen/DownloadPdf"
 
 const StatisticsScreen: React.FC = () => {
   const params = useLocalSearchParams();
@@ -137,60 +135,11 @@ const StatisticsScreen: React.FC = () => {
     setModalType("information");
   };
 
-  const handleGetStatistics = async () => { 
-    console.log("Начало операции");
-
-    try {
-        const statistics = await api.getPatientStatistics(patientId, dates.start, dates.end);
-        console.log(statistics);
-
-        if (statistics) {
-          try {
-            const permissions = await SAF.StorageAccessFramework.requestDirectoryPermissionsAsync();
-        
-            if (!permissions.granted) {
-              alert("Разрешение не получено");
-              return;
-            }
-        
-            const fileUri = FileSystem.documentDirectory + 'statistics.pdf';
-
-            const base64 = await FileSystem.readAsStringAsync(fileUri, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-        
-            const newFileUri = await SAF.StorageAccessFramework.createFileAsync(
-              permissions.directoryUri,
-              'statistics.pdf',
-              'application/pdf'
-            );
-        
-            await FileSystem.writeAsStringAsync(newFileUri, base64, {
-              encoding: FileSystem.EncodingType.Base64,
-            });
-        
-            alert("PDF успешно сохранён в выбранную папку 📁");
-          } catch (err) {
-            console.error("Ошибка при сохранении PDF:", err);
-            alert("Ошибка при сохранении файла");
-          }
-        }
-        
-        // 📦 Создаём PDF файл в documentDirectory (если ещё не создан)
-        const fileUri = FileSystem.documentDirectory + 'statistics.pdf';
-    } catch (error) {
-        console.log("Ошибка при скачивании или сохранении файла:", error);
-        setModalMessage("Ошибка при скачивании статистики");
-        setModalType("information");
-        setModalVisible(true);
-    }
-};
-
-
-
   const handleModalClose = () => {
     setModalVisible(false);
   };
+      
+ 
 
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 
@@ -261,7 +210,10 @@ const StatisticsScreen: React.FC = () => {
         </View>
         {emailError && <Text style={styles.errorText}>{emailError}</Text>}
 
-         <TouchableOpacity style={styles.downloadButton} onPress={handleGetStatistics}>
+         <TouchableOpacity style={styles.downloadButton} 
+          onPress={
+            () => handleGetStatistics(patientId, dates, setModalMessage, setModalVisible)
+          }>
           <Text style={styles.downloadText}>Скачать статистику</Text>
           <AntDesign name="download" size={20} color={Colors.primary} />
         </TouchableOpacity>
