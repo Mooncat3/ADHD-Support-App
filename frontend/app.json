@@ -35,7 +35,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#232323",
+          "backgroundColor": "#ffffff",
           "image": "./assets/images/favicon.png",
           "imageWidth": 200
         }
