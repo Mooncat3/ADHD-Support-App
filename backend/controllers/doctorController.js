@@ -59,7 +59,6 @@ export const getStatisticsFile = async (req, res) => {
   console.log('Получение статистики для пользователя:', patientId, startDate, endDate);
 
   try {
-      // const doctorId = req.userId;
       await pool.query(`SET app.user_uuid = '${patientId}'`);
 
       const request = await pool.query(
@@ -68,7 +67,7 @@ export const getStatisticsFile = async (req, res) => {
       );
 
       const userStatistics = request.rows; 
-
+      console.log(request)
       if (userStatistics.length > 0) {
           const pdf = await createPdfDocument(userStatistics);
 

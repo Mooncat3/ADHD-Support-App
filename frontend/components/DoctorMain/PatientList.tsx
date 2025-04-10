@@ -37,7 +37,6 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
     const fetchPatients = async () => {
       try {
         const data = await api.getPatients();
-        console.log(data);
 
         if (data && data.length > 0) {
           setPatients(data);

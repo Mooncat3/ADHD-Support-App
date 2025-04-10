@@ -17,9 +17,10 @@ import { validateEmail } from "@/components/ValidateInputs";
 import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import api from "@/scripts/api";
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 
 const StatisticsScreen: React.FC = () => {
-  const router = useRouter();
   const params = useLocalSearchParams();
 
   const [dates, setDates] = useState({
@@ -136,20 +137,48 @@ const StatisticsScreen: React.FC = () => {
     setModalType("information");
   };
 
-  const handleSendStatistics = async () => {
-    try {
-        console.log(patientId, dates.start, dates.end)
-        const statistics = await api.getPatientStatistics(patientId, dates.start, dates.end);
-        console.log('Статистика пациента:', statistics);  
-        setModalMessage(`Статистика успешно загружена`);
-    } catch (error) {
-        console.error('Ошибка получения статистики:', error);
-        setModalMessage("Ошибка при получении статистики");
-    }
+  const handleGetStatistics = async () => { 
+    console.log("Начало операции");
 
-    setModalType("information");
-    setModalVisible(true);
+    try {
+        const statistics = await api.getPatientStatistics(patientId, dates.start, dates.end);
+        console.log(statistics);
+
+        if (statistics) {
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                setModalMessage('Разрешение на доступ к медиатеке не получено!');
+                return;
+            }
+
+            const fileUri = FileSystem.documentDirectory + "statistics.pdf";
+            console.log(fileUri)
+            await FileSystem.writeAsStringAsync(fileUri, statistics, {
+                encoding: FileSystem.EncodingType.Base64,
+            });
+            
+            const { uri } = await MediaLibrary.createAssetAsync(`${fileUri}`)
+              .then((response) => response)
+              .catch((error) => error);;
+              await MediaLibrary.createAssetAsync(uri); 
+            alert("Файл успешно сохранён!");
+
+            const fileInfo = await FileSystem.getInfoAsync(fileUri);
+            if (!fileInfo.exists) {
+                alert("Не удалось создать файл.");
+                return;
+            }
+        } else {
+            alert("Не удалось получить статистику, проверьте данные.");
+        }
+    } catch (error) {
+        console.log("Ошибка при скачивании или сохранении файла:", error);
+        setModalMessage("Ошибка при скачивании статистики");
+        setModalType("information");
+        setModalVisible(true);
+    }
 };
+
 
 
   const handleModalClose = () => {
@@ -225,7 +254,7 @@ const StatisticsScreen: React.FC = () => {
         </View>
         {emailError && <Text style={styles.errorText}>{emailError}</Text>}
 
-         <TouchableOpacity style={styles.downloadButton} onPress={handleSendStatistics}>
+         <TouchableOpacity style={styles.downloadButton} onPress={handleGetStatistics}>
           <Text style={styles.downloadText}>Скачать статистику</Text>
           <AntDesign name="download" size={20} color={Colors.primary} />
         </TouchableOpacity>

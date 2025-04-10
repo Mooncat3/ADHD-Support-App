@@ -24,6 +24,7 @@ const PatientInfo = () => {
     lastname = "",
     login = "",
     email = "",
+    id = "",
   } = params;
 
   const handlePatientStatistics = () => {

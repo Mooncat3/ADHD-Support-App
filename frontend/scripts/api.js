@@ -4,6 +4,7 @@ import {
   getTokenFromSecureStore,
 } from "@/scripts/jwt";
 import { sha256 } from "react-native-sha256";
+import { Buffer } from 'buffer';
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -100,18 +101,26 @@ export default {
   },
 
   getPatientStatistics: async (patientId, startDate, endDate) => {
-    try {
     const response = await api.get("/doctor/createPdf", {
         params: {
             patientId,   
             startDate,   
             endDate      
-        }
-    });
-    return response.data; 
-    }
-    catch (error) {
-      return error.message;
-    }
-},
+        },responseType: 'arraybuffer', 
+      });
+  
+      const base64Data = Buffer.from(response.data, 'binary').toString('base64');
+      return base64Data},
+
+  // setPatientStatistics: async (patientId, date, data) => {
+  //   const response = await api.post("/doctor/setStatistics", {
+  //       params: {
+  //           patientId,   
+  //           date,   
+  //           data      
+  //       },
+  //   });
+  //   return response.data; 
+  // },
+  
 };
