@@ -17,8 +17,8 @@ import { validateEmail } from "@/components/ValidateInputs";
 import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import api from "@/scripts/api";
+import * as SAF from 'expo-file-system';
 import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
 
 const StatisticsScreen: React.FC = () => {
   const params = useLocalSearchParams();
@@ -145,32 +145,39 @@ const StatisticsScreen: React.FC = () => {
         console.log(statistics);
 
         if (statistics) {
-            const { status } = await MediaLibrary.requestPermissionsAsync();
-            if (status !== 'granted') {
-                setModalMessage('Разрешение на доступ к медиатеке не получено!');
-                return;
+          try {
+            const permissions = await SAF.StorageAccessFramework.requestDirectoryPermissionsAsync();
+        
+            if (!permissions.granted) {
+              alert("Разрешение не получено");
+              return;
             }
+        
+            const fileUri = FileSystem.documentDirectory + 'statistics.pdf';
 
-            const fileUri = FileSystem.documentDirectory + "statistics.pdf";
-            console.log(fileUri)
-            await FileSystem.writeAsStringAsync(fileUri, statistics, {
-                encoding: FileSystem.EncodingType.Base64,
+            const base64 = await FileSystem.readAsStringAsync(fileUri, {
+              encoding: FileSystem.EncodingType.Base64,
             });
-            
-            const { uri } = await MediaLibrary.createAssetAsync(`${fileUri}`)
-              .then((response) => response)
-              .catch((error) => error);;
-              await MediaLibrary.createAssetAsync(uri); 
-            alert("Файл успешно сохранён!");
-
-            const fileInfo = await FileSystem.getInfoAsync(fileUri);
-            if (!fileInfo.exists) {
-                alert("Не удалось создать файл.");
-                return;
-            }
-        } else {
-            alert("Не удалось получить статистику, проверьте данные.");
+        
+            const newFileUri = await SAF.StorageAccessFramework.createFileAsync(
+              permissions.directoryUri,
+              'statistics.pdf',
+              'application/pdf'
+            );
+        
+            await FileSystem.writeAsStringAsync(newFileUri, base64, {
+              encoding: FileSystem.EncodingType.Base64,
+            });
+        
+            alert("PDF успешно сохранён в выбранную папку 📁");
+          } catch (err) {
+            console.error("Ошибка при сохранении PDF:", err);
+            alert("Ошибка при сохранении файла");
+          }
         }
+        
+        // 📦 Создаём PDF файл в documentDirectory (если ещё не создан)
+        const fileUri = FileSystem.documentDirectory + 'statistics.pdf';
     } catch (error) {
         console.log("Ошибка при скачивании или сохранении файла:", error);
         setModalMessage("Ошибка при скачивании статистики");
