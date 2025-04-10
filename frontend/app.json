@@ -1,36 +1,45 @@
 {
   "expo": {
-    "name": "stay-focused",
-    "description": "Приложение помогает пациентам с СДВГ развивать самоконтроль и концентрацию через систему заданий с фиксированным графиком нажатий кнопки. Врач или родитель управляет доступом, уровнем сложности и анализирует статистику выполнения. Данные можно экспортировать в Excel/PDF.",
+    "name": "Stay Focused",
+    "description": "Приложение помогает пациентам с СДВГ развивать самоконтроль и концентрацию через систему заданий с фиксированным графиком нажатий кнопки. Врач или родитель управляет доступом, уровнем сложности и анализирует статистику выполнения. Данные можно экспортировать в PDF.",
     "slug": "stay-focused",
     "version": "1.0.0",
     "owner": "mooncat3",
     "orientation": "portrait",
-    "icon": "./assets/images/favicon_new.png",
+    "icon": "./assets/images/favicon.png",
     "scheme": "adhd",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.stayfocused.stayfocused",
-      "buildNumber": "1.0.0"
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.stayfocused.stayfocused",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/favicon_new.png",
+        "foregroundImage": "./assets/images/favicon.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon_new.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": ["expo-router", "expo-secure-store"],
     "experiments": {
       "typedRoutes": true
+    },
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": ["react-native-responsive-fontsize", "expo-env"],
+        "listUnknownPackages": false
+      }
     },
     "extra": {
       "eas": {
