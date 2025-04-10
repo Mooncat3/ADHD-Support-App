@@ -46,9 +46,9 @@ const TaskInfoScreen: React.FC = () => {
         setLoadingMessage("Загрузка активности...");
         if (!user.activity) {
           const defaultActivity = {
-            level: 2,
-            tap_count: [10, 18],
-            selected_time: ["9", "10", "12", "18"],
+            level: 1,
+            tap_count: 10,
+            selected_time: [],
           };
           setActivityData(defaultActivity);
           generateTaskData(defaultActivity);
@@ -72,7 +72,7 @@ const TaskInfoScreen: React.FC = () => {
       time: `${time.padStart(2, "0")}:00`,
       level: activity.level,
       tap_count: Array.isArray(activity.tap_count)
-        ? index % 2 === 1
+        ? index % 2 === 0
           ? activity.tap_count
           : [activity.tap_count[1], activity.tap_count[0]]
         : activity.tap_count,

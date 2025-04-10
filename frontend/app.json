@@ -4,15 +4,20 @@
     "description": "Приложение помогает пациентам с СДВГ развивать самоконтроль и концентрацию через систему заданий с фиксированным графиком нажатий кнопки. Врач или родитель управляет доступом, уровнем сложности и анализирует статистику выполнения. Данные можно экспортировать в Excel/PDF.",
     "slug": "stay-focused",
     "version": "1.0.0",
+    "owner": "mooncat3",
     "orientation": "portrait",
     "icon": "./assets/images/favicon_new.png",
     "scheme": "adhd",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.stayfocused.stayfocused",
+      "buildNumber": "1.0.0"
     },
     "android": {
+      "package": "com.stayfocused.stayfocused",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/favicon_new.png",
         "backgroundColor": "#ffffff"
@@ -27,12 +32,14 @@
       "output": "static",
       "favicon": "./assets/images/favicon_new.png"
     },
-    "plugins": [
-      "expo-router",
-      "expo-secure-store"
-    ],
+    "plugins": ["expo-router", "expo-secure-store"],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5cd504be-af68-44e6-a23f-9f107e9c5b8c"
+      }
     }
   }
 }

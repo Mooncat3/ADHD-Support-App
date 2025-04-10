@@ -27,15 +27,7 @@ const Selector: React.FC<SelectorProps> = ({
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [widths, setWidths] = useState<Record<string, number>>({});
   const [offsets, setOffsets] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    if (selected in offsets) {
-      Animated.spring(animatedValue, {
-        toValue: offsets[selected] || 0,
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [selected, offsets]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const handleLayout = (event: LayoutChangeEvent, key: string) => {
     const { width, x } = event.nativeEvent.layout;
@@ -43,11 +35,32 @@ const Selector: React.FC<SelectorProps> = ({
     setOffsets((prev) => ({ ...prev, [key]: x }));
   };
 
+  useEffect(() => {
+    if (selected in offsets) {
+      Animated.timing(animatedValue, {
+        toValue: offsets[selected] || 0,
+        useNativeDriver: false,
+        duration: 0,
+      }).start();
+      setIsLoading(false);
+    }
+  }, [offsets]);
+
+  const handleClick = (k: string) => {
+    if (k in offsets) {
+      Animated.spring(animatedValue, {
+        toValue: offsets[k] || 0,
+        useNativeDriver: false,
+      }).start();
+    }
+    onSelect(k);
+  };
+
   return (
     <View style={styles.container}>
       <>{mainLabel && <Text style={styles.label}>{mainLabel}</Text>}</>
       <View style={[styles.options, !mainLabel && styles.compactOptions]}>
-        {selected in widths && (
+        {!isLoading && (
           <Animated.View
             style={[
               styles.cursor,
@@ -63,7 +76,7 @@ const Selector: React.FC<SelectorProps> = ({
             key={k}
             activeOpacity={0.8}
             style={[styles.option, { minHeight: buttonHeight }]}
-            onPress={() => onSelect(k)}
+            onPress={() => handleClick(k)}
             onLayout={(event) => handleLayout(event, k)}
           >
             <Text

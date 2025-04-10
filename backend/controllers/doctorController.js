@@ -87,8 +87,6 @@ export const getStatisticsFile = async (req, res) => {
   }
 };
 
-
-
 export const registerPatient = async (req, res, next) => {
   try {
     const { username, password, email, firstName, secondName, patronymic } =

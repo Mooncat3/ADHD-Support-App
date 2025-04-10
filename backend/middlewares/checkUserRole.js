@@ -7,8 +7,9 @@ const checkUserRole = (role) => (req, res, next) => {
   if (!token) return res.status(401).json({ detail: "Authorization required" });
 
   verify(token, process.env.SESSION_SECRET_KEY, (err, user) => {
-    if (err || parseInt(user.role) !== role)
-      return res.status(401).json({ detail: "Authorization required" });
+    if (err) return res.status(401).json({ detail: "Authorization required" });
+    if (parseInt(user.role) !== role)
+      return res.status(403).json({ detail: "Invalid role" });
     next();
   });
 };
