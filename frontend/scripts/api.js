@@ -59,7 +59,7 @@ export default {
     );
     const response = await api.post("/auth/login", {
       ...authData,
-      passwordHash,
+      password: passwordHash,
     });
     await storeTokenInSecureStore("accessToken", response.data.accessToken);
     await storeTokenInSecureStore("refreshToken", response.data.refreshToken);
