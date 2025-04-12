@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { configDotenv } from "dotenv";
 /**
  * Отправляет email с PDF (или другим вложением), поддерживает path (прямой путь) и content (если из буфера).
  *
@@ -19,13 +20,12 @@ import nodemailer from "nodemailer";
  *
  */
 export async function sendEmailWithAttachment({
-  auth,
   to,
   subject,
   text,
   attachment,
 }) {
-  if (!auth?.user || !auth?.pass || !to || !subject || !attachment?.filename) {
+  if (!to || !subject || !attachment?.filename) {
     throw new Error("Missing required fields");
   }
 
@@ -33,13 +33,21 @@ export async function sendEmailWithAttachment({
     throw new Error("Attachment must include either path or content");
   }
 
+  const auth = {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  };
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth,
+    host: 'smtp.gmail.com',
+    port: 467,
+    secure: false,
   });
 
   const mailOptions = {
-    from: `"ADHD Support app 📬" <${auth.user}>`,
+    from: `"Stay focused" <${auth.user}>`,
     to,
     subject,
     text,

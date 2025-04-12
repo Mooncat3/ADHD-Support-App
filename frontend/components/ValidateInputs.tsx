@@ -1,9 +1,9 @@
 export const filterNameText = (text: string): boolean => /^[A-Za-zА-Яа-яЁё]*$/.test(text);
 export const filterUsernameText = (text: string): boolean => /^[A-Za-z_0-9]*$/.test(text);
 export const filterPasswordText = (text: string): boolean => /^[A-Za-z0-9!\"#$%&'()*+,-.\/:;<=>?@[\]^_`{|}~]*$/.test(text);
-export const filterEmailText = (text: string): boolean => /^[A-Za-z0-9@.]*$/.test(text);
+export const filterEmailText = (text: string): boolean => /^[A-Za-z0-9@.\-_]*$/.test(text);
 
-export const emailValidationRegex = /^[a-zA-Z0-9]+@[a-zA-Z]+\.[a-zA-Z]{2,}$/;
+export const emailValidationRegex = /^[a-zA-Z0-9.\-_]+@[a-zA-Z]+\.[a-zA-Z]{2,}$/;
 
 export const validateEmail = (email: string) => {
     return emailValidationRegex.test(email);

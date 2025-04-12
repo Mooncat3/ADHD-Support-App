@@ -124,11 +124,24 @@ export default {
     return base64Data;
   },
 
+  sendStatisticsPdf: async (patientId, startDate, endDate, email, fullName) => {
+    const response = await api.post("/doctor/sendFileEmail", {
+        patientId,
+        startDate,
+        endDate,
+        email,
+        fullName
+    });
+
+    console.log(response.data);
+  },
+
   setStatistics: async (patientId, dates) => {
     const response = await api.post("/patient/setAllStatistic", {
       patientId,
       dates,
     });
+    
     return response.data;
   },
 };

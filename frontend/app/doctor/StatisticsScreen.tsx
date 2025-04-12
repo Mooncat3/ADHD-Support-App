@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -14,12 +14,23 @@ import { Colors } from "@/constants/Colors";
 import { AntDesign, Feather, FontAwesome } from "@expo/vector-icons";
 import ModalWindow from "@/components/ModalWindow";
 import { validateEmail } from "@/components/ValidateInputs";
+import {
+  filterEmailText,
+} from "@/components/ValidateInputs";
 import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { handleGetStatistics } from "@/components/StatisticsScreen/DownloadPdf";
+import { handleSendStatistics } from "@/components/StatisticsScreen/SendEmailPdf";
+import api from "@/scripts/api";
 
 const StatisticsScreen: React.FC = () => {
-  const params = useLocalSearchParams();
+  const params = useLocalSearchParams<{
+    firstname: string;
+    surname: string;
+    lastname: string;
+    login: string;
+    patientId: string;
+  }>();
 
   const [dates, setDates] = useState({
     start: "2025-01-01",
@@ -39,7 +50,7 @@ const StatisticsScreen: React.FC = () => {
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>(
     {}
   );
-  const [email, setEmail] = useState("");
+  const [_email, setEmail] = useState<string>('');
   const [emailError, setEmailError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"confirmation" | "information">(
@@ -47,9 +58,17 @@ const StatisticsScreen: React.FC = () => {
   );
   const [modalMessage, setModalMessage] = useState("");
 
+  useEffect(() => { api.doctorData().then(user => setEmail(user.email)).catch(console.error); }, [])
+
   const handleDateSelect = (date: string, type: "start" | "end") => {
     setDates((prev) => ({ ...prev, [type]: date }));
     setShowCalendar(null);
+  };
+
+  const handleChange = (email: string) => {
+    if (filterEmailText(email)) {
+      setEmail(email);
+    }
   };
 
   const statisticsData = [
@@ -118,19 +137,19 @@ const StatisticsScreen: React.FC = () => {
   };
 
   const handleSendPress = () => {
-    if (!validateEmail(email)) {
+    if (!validateEmail(_email)) {
       setEmailError("Некорректно введен email");
       return;
     }
 
     setEmailError(null);
-    setModalMessage(`Вы действительно хотите отправить на ${email}?`);
+    setModalMessage(`Вы действительно хотите отправить на ${_email}?`);
     setModalType("confirmation");
     setModalVisible(true);
   };
 
   const handleConfirmSend = () => {
-    setModalMessage(`Отправлено на почту ${email}`);
+    setModalMessage(`Отправлено на почту ${_email}`);
     setModalType("information");
   };
 
@@ -196,12 +215,15 @@ const StatisticsScreen: React.FC = () => {
           <Text style={styles.label}>Отправить на почту</Text>
           <TextInput
             style={styles.emailInput}
-            placeholder="doctor@mail.com"
+            placeholder=""
             placeholderTextColor={Colors.headerText}
-            value={email}
-            onChangeText={setEmail}
+            value={_email}
+            onChangeText={(email) => handleChange(email)}
           />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSendPress}>
+          <TouchableOpacity 
+            style={styles.sendButton}
+            onPress={() => handleSendStatistics(patientId, dates, _email, formattedFirstName)}
+          >
             <Feather name="send" size={18} color={Colors.primary} />
           </TouchableOpacity>
         </View>

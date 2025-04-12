@@ -49,12 +49,7 @@ export const handleGetStatistics = async (
       showError("Не удалось получить статистику");
     }
   } catch (error: any) {
-    if (
-      error.message &&
-      error.message.includes("ExponentFileSystem.createSAFFileAsync")
-    ) {
-      showError("Папка переполнена, не удалось создать файл.");
-    } else if (error.message && error.message.includes("ENOSPC")) {
+    if (error.message && error.message.includes("ENOSPC")) {
       showError("Недостаточно места на устройстве");
     } else if (error.status === "404") {
       showError("У данного пациента нет статистики");

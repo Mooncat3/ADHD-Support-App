@@ -14,5 +14,6 @@ router.post("/register", doctorController.registerPatient);
 router.get("/createPdf", doctorController.getStatisticsFile);
 router.get("/activity/:patientId", doctorController.getActivity);
 router.put("/activity/:patientId", doctorController.putActivity);
+router.post("/sendFileEmail", doctorController.sendFileEmail);
 
 export default router;

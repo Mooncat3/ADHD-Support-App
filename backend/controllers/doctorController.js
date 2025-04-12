@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import { createPdfDocument } from "../utilities/createPdfDocument.js";
+import { sendEmailWithAttachment } from "../utilities/emailSender.js";
 
 export const get = async (req, res, next) => {
   try {
@@ -7,7 +8,7 @@ export const get = async (req, res, next) => {
 
     await pool.query(`SET app.user_uuid = '${doctorId}'`);
     const request = await pool.query(
-      "SELECT firstname, surname, lastname FROM users_pub"
+      "SELECT * FROM users_pub"
     );
 
     if (request.rows.length > 0)
@@ -153,3 +154,51 @@ export const putActivity = async (req, res, next) => {
     next(err);
   }
 };
+
+export const sendFileEmail = async (req, res, next) => {
+  const { patientId, startDate, endDate, email, fullName } = req.body;
+  console.log(
+    "Получение статистики для пользователя:",
+    patientId,
+    startDate,
+    endDate,
+    email
+  );
+
+  try {
+    await pool.query(`SET app.user_uuid = '${patientId}'`);
+
+    const request = await pool.query(
+      "SELECT * FROM fetch_user_stat($1, $2, $3);",
+      [patientId, startDate, endDate]
+    );
+
+    const userStatistics = request.rows;
+    console.log(userStatistics);
+    if (userStatistics.length > 0) {
+      const pdf = await createPdfDocument(userStatistics);
+      try {
+        await sendEmailWithAttachment({
+          to: email,
+          subject: `Отчёт ${fullName} за ${startDate} - ${endDate}`,
+          text: "",
+          attachment : {
+            filename: `Отчёт ${fullName} за ${startDate} - ${endDate}.pdf`,
+            content: pdf,
+          },
+        });
+      } catch (err) {
+        return res.status(450).json({ detail: "Statistic does not send" });
+      }
+      return res.status(200).json({
+        status: "success",
+        message: `Statustic send to mail`,
+      });
+    } else {
+      return res.status(404).json({ detail: "Statistic does not exist" });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ detail: "Server error" });
+  }
+}
