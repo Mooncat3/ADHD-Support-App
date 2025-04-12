@@ -1,0 +1,24 @@
+[
+  {
+    "date": 1739618736,
+    "time_stat": {
+      "9": {
+        "timestamp_start": 32400,
+        "success": true,
+        "in_time": false,
+        "tap_count": 10
+      }
+    }
+  },
+  {
+    "date": 1739705136,
+    "time_stat": {
+      "11": {
+        "timestamp_start": 34800,
+        "success": true,
+        "in_time": true,
+        "tap_count": 8
+      }
+    }
+  }
+]

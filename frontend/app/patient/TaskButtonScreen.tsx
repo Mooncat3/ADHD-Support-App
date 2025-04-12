@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { ActionButton } from "@/components/TaskButtonScreen/ActionButton";
 import Header from "@/components/Header";
 import { Colors } from "@/constants/Colors";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import api from "@/scripts/api";
+import testData from "@/app/patient/testdata.json";
 
 const Block = ({ title, value }: { title: string; value: string }) => (
   <View style={styles.block}>
@@ -12,10 +15,28 @@ const Block = ({ title, value }: { title: string; value: string }) => (
 );
 
 export default function ButtonPage() {
+  const params = useLocalSearchParams<{ patientId: string }>();
+  const { patientId = "" } = params;
+  const router = useRouter();
   const [status, setStatus] = useState("не начато");
   const [lastPress, setLastPress] = useState<number | null>(null);
   const [series, setSeries] = useState(1);
   const { height } = Dimensions.get("window");
+
+  /* Тестовая функция отправки статистики
+  useEffect(() => {
+    const sendStatistics = async () => {
+      try {
+        const response = await api.setStatistics(patientId, testData);
+        console.log("Statistics successfully sent", response);
+      } catch (error) {
+        console.log("Error sending statistics:", error);
+      }
+    };
+
+    sendStatistics();
+  }, [patientId]); */
+
   const handleClick = () => {
     const now = Date.now();
     setStatus("начато");

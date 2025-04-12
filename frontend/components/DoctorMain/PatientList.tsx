@@ -38,16 +38,14 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
       try {
         const data = await api.getPatients();
 
-        if (data && data.length > 0) {
-          setPatients(data);
-        } else {
-          setError("Нет пациентов для отображения.");
-        }
-
+        setPatients(data);
         setLoading(false);
-      } catch (error) {
-        console.log(error);
-        setError("Ошибка загрузки данных");
+      } catch (error: any) {
+        if (error.status == "404") {
+          setError("Нет данных о пациентах");
+        } else {
+          setError("Ошибка загрузки данных");
+        }
         setLoading(false);
       }
     };
@@ -59,7 +57,7 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
     router.push({
       pathname: "/doctor/PatientInfo",
       params: {
-        id: patient.patient_id,
+        patientId: patient.patient_id,
         firstname: patient.firstname,
         surname: patient.surname,
         lastname: patient.lastname,

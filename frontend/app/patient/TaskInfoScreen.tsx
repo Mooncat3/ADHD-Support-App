@@ -31,6 +31,7 @@ const TaskInfoScreen: React.FC = () => {
   const [loadingMessage, setLoadingMessage] =
     useState<string>("Загрузка данных...");
   const [taskInstructionText, setTaskInstructionText] = useState<string>("");
+  const [patientId, setPatientId] = useState<string | null>(null);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {}
   );
@@ -42,6 +43,7 @@ const TaskInfoScreen: React.FC = () => {
         const user = await api.patientData();
         const formattedFirstName = `${user.surname} ${user.firstname[0]}. ${user.lastname[0]}.`;
         setHeaderUserName(formattedFirstName);
+        setPatientId(user.id);
         if (!user) throw new Error("Пользователь не найден");
         setLoadingMessage("Загрузка активности...");
         if (!user.activity) {
@@ -98,7 +100,10 @@ const TaskInfoScreen: React.FC = () => {
 
   const router = useRouter();
   const handleStartTask = () => {
-    router.push("/patient/TaskButtonScreen");
+    router.push({
+      pathname: "/patient/TaskButtonScreen",
+      params: { patientId },
+    });
   };
   const handleLogout = () => {
     setShowConfirm(true);
