@@ -53,7 +53,14 @@ api.interceptors.response.use(
 
 export default {
   auth: async (authData) => {
-    const response = await api.post("/auth/login", authData);
+    const passwordHash = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      authData.password
+    );
+    const response = await api.post("/auth/login", {
+      ...authData,
+      passwordHash,
+    });
     await storeTokenInSecureStore("accessToken", response.data.accessToken);
     await storeTokenInSecureStore("refreshToken", response.data.refreshToken);
     return response.data;
