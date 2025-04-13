@@ -20,8 +20,6 @@ const useCache = async (
     ) {
       const data = await apiFunc();
 
-      console.log("кеширование ", key);
-
       await SecureStore.setItemAsync(
         key,
         JSON.stringify({
