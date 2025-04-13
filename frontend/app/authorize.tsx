@@ -109,7 +109,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
 
   return (
     <View style={styles.container}>
-      <Header title={"Авторизация"} createBackButton={true} />
+      <Header title={"Авторизация"} createBackButton={false} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.formContainer}

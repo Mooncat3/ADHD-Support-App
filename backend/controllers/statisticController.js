@@ -32,7 +32,7 @@ const fetchUserStat = async (patientId, startDate, endDate) => {
 }; */
 
 export const getStatisticsFile = async (req, res, next) => {
-  const { startDate, endDate, fullName } = req.query;
+  const { startDate, endDate } = req.body;
   const { patientId } = req.params;
 
   try {
@@ -40,14 +40,10 @@ export const getStatisticsFile = async (req, res, next) => {
 
     if (userStatistics) {
       const pdf = await createPdfDocument(userStatistics);
-      const filename = `Отчёт ${fullName} за ${startDate} - ${endDate}.pdf`;
 
       res.writeHead(200, {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=${filename.replace(
-          " ",
-          "_"
-        )}`,
+        "Content-Disposition": "attachment; filename=statistics.pdf",
         "Content-Length": Buffer.byteLength(pdf),
       });
 

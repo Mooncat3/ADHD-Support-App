@@ -3,11 +3,16 @@ import NetInfo from "@react-native-community/netinfo";
 import { getTokenFromSecureStore, getRoleFromSecureStore } from "@/scripts/jwt";
 import api from "@/scripts/api";
 import { useRouter } from "expo-router";
+import { setUnauthorizedHandler } from "@/scripts/api";
 
 const useCheckInternetRole = () => {
   const router = useRouter();
 
   useEffect(() => {
+    setUnauthorizedHandler(() => {
+      router.push("/authorize");
+    });
+
     const checkNetworkStatus = async () => {
       try {
         const state = await NetInfo.fetch();

@@ -25,7 +25,7 @@ type RegistrationData = {
 
 const DoctorMain: React.FC = () => {
   const router = useRouter();
-  const [headerUserName, setHeaderUserName] = useState<string>("Имя Ф. О.");
+  const [headerUserName, setHeaderUserName] = useState<string>("");
   const [selc, setSelc] = useState<string>("patient_list");
   const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});

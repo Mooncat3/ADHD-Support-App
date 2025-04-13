@@ -5,7 +5,12 @@ import {
 } from "@/scripts/jwt";
 import { Buffer } from "buffer";
 import * as Crypto from "expo-crypto";
-import { useRouter } from "expo-router";
+
+let unauthorizedHandler = () => {};
+
+export function setUnauthorizedHandler(handler) {
+  unauthorizedHandler = handler;
+}
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -33,14 +38,13 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const router = useRouter();
     const url = error.response?.config?.url;
     if (error.response?.status === 401 && url !== "/auth/refresh") {
       const newAccessToken = await refreshToken();
       if (newAccessToken) {
         error.config.headers["Authorization"] = `Bearer ${newAccessToken}`;
         return api.request(error.config);
-      } else router.push("/authorize");
+      } else unauthorizedHandler();
     } else {
       if (axios.isAxiosError(error)) {
         const axErr = new Error(error.message);
@@ -112,12 +116,11 @@ export default {
     return response.data;
   },
 
-  getStatisticsPdf: async (patientId, startDate, endDate, fullName) => {
+  getStatisticsPdf: async (patientId, startDate, endDate) => {
     const response = await api.get(`/statistic/file/${patientId}`, {
       data: {
         startDate,
         endDate,
-        fullName,
       },
       responseType: "arraybuffer",
     });

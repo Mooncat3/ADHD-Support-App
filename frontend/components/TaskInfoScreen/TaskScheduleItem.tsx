@@ -141,6 +141,7 @@ const TaskScheduleItem: React.FC<TaskScheduleItemProps> = ({
                   }),
                 },
               ],
+              transformOrigin: "50% 25%",
             },
           ]}
         >

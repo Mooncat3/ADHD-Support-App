@@ -3,13 +3,13 @@ import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
-import checkInternetRole from '@/hooks/CheckInternetRole';
+import useCheckInternetRole from "@/hooks/useCheckInternetRole";
 
 export default function App() {
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
 
-  checkInternetRole();
+  useCheckInternetRole();
 
   useEffect(() => {
     async function prepare() {
@@ -66,10 +66,6 @@ export default function App() {
         <Button
           title="Статистика пациента / ребёнка"
           onPress={() => router.push("/doctor/StatisticsScreen")}
-        />
-        <Button
-          title="Редактирование задания для пациента / ребёнка"
-          onPress={() => router.push("/doctor/TaskSettings")}
         />
         <Button
           title="Окно с описанием заданий для пациента / ребёнка"

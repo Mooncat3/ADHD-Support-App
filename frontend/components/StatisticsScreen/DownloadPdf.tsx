@@ -20,8 +20,7 @@ export const handleGetStatistics = async (
     const statistics = await api.getStatisticsPdf(
       patientId,
       dates.start,
-      dates.end,
-      fullName
+      dates.end
     );
 
     if (statistics) {
@@ -32,10 +31,11 @@ export const handleGetStatistics = async (
         showError("Разрешение на доступ к файлам не получено");
         return;
       }
+      const filename = `Отчёт ${fullName} за ${dates.start} - ${dates.end}.pdf`;
 
       const newFileUri = await SAF.StorageAccessFramework.createFileAsync(
         permissions.directoryUri,
-        "statistics.pdf",
+        filename.replace(" ", "_"),
         "application/pdf"
       );
 

@@ -43,6 +43,8 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 16,
     fontFamily: "Montserrat-SemiBold",
+    width: "100%",
+    textAlign: "center",
   },
 });
 
