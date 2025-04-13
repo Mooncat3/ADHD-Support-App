@@ -19,7 +19,7 @@ const getTokenFromSecureStore = async (key) => {
 
 const deleteTokenFromSecureStore = async (key) => {
   try {
-    const token = await SecureStore.getItemAsync(key);
+    const token = await getTokenFromSecureStore(key);
     if (token) await SecureStore.deleteItemAsync(key);
   } catch (error) {
     console.log("Ошибка при удалении токена из SecureStore:", error);

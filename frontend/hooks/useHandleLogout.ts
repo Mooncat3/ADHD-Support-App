@@ -6,6 +6,9 @@ const useHandleLogout = async (router: any) => {
 
   await deleteTokenFromSecureStore("accessToken");
   await deleteTokenFromSecureStore("refreshToken");
+
+  await deleteTokenFromSecureStore("role");
+  await deleteTokenFromSecureStore("user");
 };
 
 export default useHandleLogout;
