@@ -1,10 +1,9 @@
 import { useEffect } from "react";
-import NetInfo from "@react-native-community/netinfo";
-import { getRoleFromSecureStore } from "@/scripts/jwt";
 import api from "@/scripts/api";
 import { useRouter } from "expo-router";
 import { setUnauthorizedHandler } from "@/scripts/api";
 import { useHandleLogout } from "./useHandleLogout";
+import useCache from "./useCache";
 
 const useCheckInternetRole = () => {
   const router = useRouter();
@@ -14,22 +13,17 @@ const useCheckInternetRole = () => {
       await useHandleLogout(router);
     });
 
-    const checkNetworkStatus = async () => {
-      const state = await NetInfo.fetch();
+    const getRole = async () => {
+      const role = await useCache("role", api.getUserRole);
 
-      if (state.isConnected && state.isInternetReachable) {
-        const response = await api.getUserRole();
-        if (response) {
-          const targetRoute =
-            response.role === 0
-              ? "/doctor/DoctorMain"
-              : "/patient/TaskInfoScreen";
-          router.push(targetRoute);
-        }
-      } else router.push("/patient/TaskInfoScreen");
+      if (role) {
+        const targetRoute =
+          role.role === 0 ? "/doctor/DoctorMain" : "/patient/TaskInfoScreen";
+        router.push(targetRoute);
+      }
     };
 
-    checkNetworkStatus();
+    getRole();
   }, [router]);
 };
 
