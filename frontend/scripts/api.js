@@ -126,11 +126,11 @@ export default {
 
   sendStatisticsPdf: async (patientId, startDate, endDate, email, fullName) => {
     const response = await api.post("/doctor/sendFileEmail", {
-        patientId,
-        startDate,
-        endDate,
-        email,
-        fullName
+      patientId,
+      startDate,
+      endDate,
+      email,
+      fullName,
     });
 
     console.log(response.data);
@@ -141,7 +141,7 @@ export default {
       patientId,
       dates,
     });
-    
+
     return response.data;
   },
 };
