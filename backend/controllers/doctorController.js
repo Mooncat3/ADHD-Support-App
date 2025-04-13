@@ -66,30 +66,35 @@ const fetchUserStat = async (patientId, startDate, endDate) => {
 }; */
 
 export const getStatisticsFile = async (req, res, next) => {
-  const { patientId, startDate, endDate, fullName } = req.query;
+  const { startDate, endDate, fullName } = req.query;
+  const { patientId } = req.params;
 
   try {
     const userStatistics = await fetchUserStat(patientId, startDate, endDate);
 
     if (userStatistics) {
       const pdf = await createPdfDocument(userStatistics);
-      const filename = `Отчёт_${fullName}_за ${startDate}_-_${endDate}.pdf`;
+      const filename = `Отчёт ${fullName} за ${startDate} - ${endDate}.pdf`;
 
       res.writeHead(200, {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename=${filename}`,
+        "Content-Disposition": `attachment; filename=${filename.replace(
+          " ",
+          "_"
+        )}`,
         "Content-Length": Buffer.byteLength(pdf),
       });
 
       res.end(pdf);
-    } else return res.status(404).json({ detail: "Statistic does not exist" });
+    } else return res.status(404).json({ detail: "Statistics do not exist" });
   } catch (err) {
     next(err);
   }
 };
 
 export const sendFileEmail = async (req, res, next) => {
-  const { patientId, startDate, endDate, email, fullName } = req.body;
+  const { startDate, endDate, email, fullName } = req.body;
+  const { patientId } = req.params;
 
   try {
     const userStatistics = await fetchUserStat(patientId, startDate, endDate);
@@ -97,17 +102,18 @@ export const sendFileEmail = async (req, res, next) => {
     if (userStatistics) {
       const pdf = await createPdfDocument(userStatistics);
       try {
+        const filename = `Отчёт ${fullName} за ${startDate} - ${endDate}.pdf`;
         await sendEmailWithAttachment({
           to: email,
           subject: `Отчёт ${fullName} за ${startDate} - ${endDate}`,
           text: "",
           attachment: {
-            filename: `Отчёт ${fullName} за ${startDate} - ${endDate}.pdf`,
+            filename: filename.replace(" ", "_"),
             content: pdf,
           },
         });
       } catch (err) {
-        return res.status(450).json({ detail: "Statistic does not send" });
+        return res.status(450).json({ detail: "Statistics do not send" });
       }
       return res.status(200).json({
         status: "success",
@@ -155,7 +161,7 @@ export const getActivity = async (req, res, next) => {
     await pool.query(`SET app.user_uuid = '${patientId}'`);
     const request = await pool.query(`SELECT activity FROM users_pub`);
     if (request.rows.length > 0) return res.status(200).json(request.rows[0]);
-    return res.status(204).json({ detail: "Activity do not exist" });
+    return res.status(404).json({ detail: "Activity do not exist" });
   } catch (err) {
     next(err);
   }

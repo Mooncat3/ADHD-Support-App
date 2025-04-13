@@ -112,12 +112,12 @@ export default {
     return response.data;
   },
 
-  getStatisticsPdf: async (patientId, startDate, endDate) => {
-    const response = await api.get("/doctor/createPdf", {
-      params: {
-        patientId,
+  getStatisticsPdf: async (patientId, startDate, endDate, fullName) => {
+    const response = await api.get(`/doctor/createPdf/${patientId}`, {
+      data: {
         startDate,
         endDate,
+        fullName,
       },
       responseType: "arraybuffer",
     });
@@ -127,15 +127,14 @@ export default {
   },
 
   sendStatisticsPdf: async (patientId, startDate, endDate, email, fullName) => {
-    const response = await api.post("/doctor/sendFileEmail", {
-      patientId,
+    const response = await api.post(`/doctor/sendFileEmail/${patientId}`, {
       startDate,
       endDate,
       email,
       fullName,
     });
 
-    console.log(response.data);
+    return response.data;
   },
 
   setStatistics: async (patientId, dates) => {
