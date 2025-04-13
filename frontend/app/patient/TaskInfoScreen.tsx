@@ -17,7 +17,7 @@ import api from "@/scripts/api";
 import LoadingModal from "@/components/LoadingModal";
 import * as SecureStore from "expo-secure-store";
 import NetInfo from "@react-native-community/netinfo";
-import { useHandleLogout } from "@/hooks/useHandleLogout";
+import useHandleLogout from "@/hooks/useHandleLogout";
 
 type ActivityData = {
   level: number;

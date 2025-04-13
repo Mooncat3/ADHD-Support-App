@@ -13,7 +13,7 @@ import api from "@/scripts/api";
 import { checkCode } from "@/components/CheckErrorCode";
 import ModalWindow from "@/components/ModalWindow";
 import LoadingModal from "@/components/LoadingModal";
-import { useHandleLogout } from "@/hooks/useHandleLogout";
+import useHandleLogout from "@/hooks/useHandleLogout";
 
 type RegistrationData = {
   firstName: string;

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import api from "@/scripts/api";
 import { useRouter } from "expo-router";
 import { setUnauthorizedHandler } from "@/scripts/api";
-import { useHandleLogout } from "./useHandleLogout";
+import useHandleLogout from "./useHandleLogout";
 import useCache from "./useCache";
 
 const useCheckInternetRole = () => {
@@ -20,7 +20,7 @@ const useCheckInternetRole = () => {
         const targetRoute =
           role.role === 0 ? "/doctor/DoctorMain" : "/patient/TaskInfoScreen";
         router.push(targetRoute);
-      }
+      } else await useHandleLogout(router);
     };
 
     getRole();

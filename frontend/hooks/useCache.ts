@@ -3,7 +3,7 @@ import * as SecureStore from "expo-secure-store";
 
 const useCache = async (
   key: string,
-  apiFunc: () => {},
+  apiFunc: any,
   CACHE_EXPIRE: number = 1 * 30 * 1000
 ) => {
   try {
@@ -33,7 +33,7 @@ const useCache = async (
 
     if (parsed) return parsed;
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.log("Error fetching data:", error);
   }
 };
 
