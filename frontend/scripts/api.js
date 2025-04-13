@@ -117,13 +117,14 @@ export default {
   },
 
   getStatisticsPdf: async (patientId, startDate, endDate) => {
-    const response = await api.get(`/statistic/file/${patientId}`, {
-      data: {
+    const response = await api.post(
+      `/statistic/file/${patientId}`,
+      {
         startDate,
         endDate,
       },
-      responseType: "arraybuffer",
-    });
+      { responseType: "arraybuffer" }
+    );
 
     const base64Data = Buffer.from(response.data, "binary").toString("base64");
     return base64Data;

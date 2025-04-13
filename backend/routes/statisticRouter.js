@@ -8,7 +8,7 @@ const router = express.Router();
 router.use(authenticate);
 router.use(checkUserRole(0));
 
-router.get("/file/:patientId", statisticController.getStatisticsFile);
+router.post("/file/:patientId", statisticController.getStatisticsFile);
 router.post("/mail/:patientId", statisticController.sendFileEmail);
 
 export default router;

@@ -1,6 +1,4 @@
 import api from "@/scripts/api";
-import * as SAF from "expo-file-system";
-import * as FileSystem from "expo-file-system";
 import { ToastAndroid, Platform, Alert } from "react-native";
 
 const showError = (message: string) => {
@@ -25,7 +23,6 @@ export const handleSendStatistics = async (
       email,
       formattedFirstName
     );
-
   } catch (error: any) {
     if (
       error.message &&
@@ -38,7 +35,7 @@ export const handleSendStatistics = async (
       showError("У данного пациента нет статистики");
     } else {
       console.log(error);
-      showError("Ошибка при скачивании статистики");
+      showError("Ошибка при отправке статистики");
     }
   }
 };

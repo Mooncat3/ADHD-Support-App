@@ -13,6 +13,7 @@ import api from "@/scripts/api";
 import { checkCode } from "@/components/CheckErrorCode";
 import ModalWindow from "@/components/ModalWindow";
 import LoadingModal from "@/components/LoadingModal";
+import { useHandleLogout } from "@/hooks/useHandleLogout";
 
 type RegistrationData = {
   firstName: string;
@@ -131,9 +132,9 @@ const DoctorMain: React.FC = () => {
     }
   };
   const handleLogout = () => showModal("logout");
-  const handleLogoutConfirm = () => {
+  const handleLogoutConfirm = async () => {
     showModal(null);
-    router.back();
+    await useHandleLogout(router);
   };
 
   return (
