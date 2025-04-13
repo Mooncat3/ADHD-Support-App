@@ -57,7 +57,7 @@ const DoctorMain: React.FC = () => {
         }
       })
       .catch((error) => {
-        setError(checkCode(error.message));
+        setError(checkCode(error.status.toString()));
         console.error("Error getting user role:", error);
       });
   }, []);

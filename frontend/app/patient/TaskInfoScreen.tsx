@@ -113,25 +113,27 @@ const TaskInfoScreen: React.FC = () => {
   };
 
   const generateTaskData = (activity: ActivityData) => {
-    const tasks = activity.selected_time.map((time, index) => ({
-      id: `${index + 1}`,
-      time: `${time.padStart(2, "0")}:00`,
-      level: activity.level,
-      tap_count: Array.isArray(activity.tap_count)
-        ? index % 2 === 0
-          ? activity.tap_count
-          : [activity.tap_count[1], activity.tap_count[0]]
-        : activity.tap_count,
-    }));
+    if (activity.selected_time) {
+      const tasks = activity.selected_time.map((time, index) => ({
+        id: `${index + 1}`,
+        time: `${time.padStart(2, "0")}:00`,
+        level: activity.level,
+        tap_count: Array.isArray(activity.tap_count)
+          ? index % 2 === 0
+            ? activity.tap_count
+            : [activity.tap_count[1], activity.tap_count[0]]
+          : activity.tap_count,
+      }));
 
-    setTaskData(tasks);
-    if (tasks.length > 0) {
-      setExpandedItems({ [tasks[0].id]: true });
+      setTaskData(tasks);
+      if (tasks.length > 0) {
+        setExpandedItems({ [tasks[0].id]: true });
+      }
     }
   };
 
   useEffect(() => {
-    if (!activityData)
+    if (!activityData || !activityData.selected_time)
       return setTaskInstructionText("Не удалось загрузить задания");
     const instruction =
       activityData.selected_time.length === 0

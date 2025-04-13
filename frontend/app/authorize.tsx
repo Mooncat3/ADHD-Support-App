@@ -99,7 +99,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
         })
         .catch((error) => {
           setIsLoading(false);
-          setError(checkCode(error.message));
+          setError(checkCode(error.status.toString()));
         });
     } else {
       setIsLoading(false);
