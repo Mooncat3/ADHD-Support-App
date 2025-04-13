@@ -5,6 +5,7 @@ import {
 } from "@/scripts/jwt";
 import { Buffer } from "buffer";
 import * as Crypto from "expo-crypto";
+import { useRouter } from "expo-router";
 
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
@@ -32,13 +33,14 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    const router = useRouter();
     const url = error.response?.config?.url;
     if (error.response?.status === 401 && url !== "/auth/refresh") {
       const newAccessToken = await refreshToken();
       if (newAccessToken) {
         error.config.headers["Authorization"] = `Bearer ${newAccessToken}`;
         return api.request(error.config);
-      }
+      } else router.push("/authorize");
     } else {
       if (axios.isAxiosError(error)) {
         const axErr = new Error(error.message);
