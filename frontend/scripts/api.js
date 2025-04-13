@@ -141,10 +141,9 @@ export default {
     return response.data;
   },
 
-  setStatistics: async (patientId, dates) => {
+  setStatistics: async (data) => {
     const response = await api.post("/patient/setAllStatistic", {
-      patientId,
-      dates,
+      data,
     });
 
     return response.data;
