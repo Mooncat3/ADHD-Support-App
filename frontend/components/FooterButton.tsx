@@ -8,14 +8,20 @@ interface FooterButtonProps {
   secondary?: boolean;
 }
 
-const FooterButton: React.FC<FooterButtonProps> = ({ onPress, label, secondary = false }) => {
+const FooterButton: React.FC<FooterButtonProps> = ({
+  onPress,
+  label,
+  secondary = false,
+}) => {
   return (
     <TouchableOpacity
       activeOpacity={0.9}
       style={[styles.button, secondary && styles.secondaryButton]}
       onPress={onPress}
     >
-      <Text style={styles.buttonText}>{label}</Text>
+      <Text style={styles.buttonText} numberOfLines={1}>
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 };

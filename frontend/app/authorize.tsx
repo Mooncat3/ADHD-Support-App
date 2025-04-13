@@ -26,6 +26,8 @@ import {
 import { checkCode } from "@/components/CheckErrorCode";
 import api from "@/scripts/api";
 import { useRouter } from "expo-router";
+import LoadingModal from "@/components/LoadingModal";
+import * as SecureStore from "expo-secure-store";
 
 type AuthorizationData = {
   username: string;
@@ -44,6 +46,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
     useTogglePasswordVisibility();
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [error, setError] = useState<string>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [authorizationData, setAuthorizationData] = useState<AuthorizationData>(
     {
       username: "",
@@ -62,8 +65,11 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
       setAuthorizationData((prev) => ({ ...prev, [field]: text }));
     }
   };
-
+  const onClose = () => {
+    setIsLoading(false);
+  };
   const handleAuthorize = async () => {
+    setIsLoading(true);
     setError("");
     const errors = validateForm(authorizationData, false);
 
@@ -74,12 +80,14 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
     setFormErrors(filteredErrors);
 
     if (Object.keys(filteredErrors).length === 0) {
+      await SecureStore.deleteItemAsync("user");
       api
         .auth(authorizationData)
         .then(() => {
           api
             .getUserRole()
             .then((response) => {
+              setIsLoading(false);
               if (response)
                 response.role === 0
                   ? router.push("/doctor/DoctorMain")
@@ -90,10 +98,11 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
             });
         })
         .catch((error) => {
-          console.log(error.message);
+          setIsLoading(false);
           setError(checkCode(error.message));
         });
     } else {
+      setIsLoading(false);
       console.log("Validation errors:", filteredErrors);
     }
   };
@@ -101,7 +110,6 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
   return (
     <View style={styles.container}>
       <Header title={"Авторизация"} createBackButton={true} />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.formContainer}
@@ -133,8 +141,8 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
             </Pressable>
           </View>
         </ScrollView>
+        <LoadingModal visible={isLoading} />
       </KeyboardAvoidingView>
-
       <Footer
         components={[
           <FooterButton onPress={handleAuthorize} label="Войти" key="1" />,
@@ -156,6 +164,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 20,
+    position: "relative", // для корректного позиционирования модального окна
   },
   formContent: {
     flexGrow: 1,
