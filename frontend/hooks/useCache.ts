@@ -31,7 +31,7 @@ const useCache = async (
       return data;
     }
 
-    if (parsed) return parsed;
+    if (parsed) return parsed.data;
   } catch (error) {
     console.log("Error fetching data:", error);
   }
