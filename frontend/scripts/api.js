@@ -113,7 +113,7 @@ export default {
   },
 
   getStatisticsPdf: async (patientId, startDate, endDate, fullName) => {
-    const response = await api.get(`/doctor/createPdf/${patientId}`, {
+    const response = await api.get(`/statistic/file/${patientId}`, {
       data: {
         startDate,
         endDate,
@@ -127,7 +127,7 @@ export default {
   },
 
   sendStatisticsPdf: async (patientId, startDate, endDate, email, fullName) => {
-    const response = await api.post(`/doctor/sendFileEmail/${patientId}`, {
+    const response = await api.post(`/statistic/mail/${patientId}`, {
       startDate,
       endDate,
       email,

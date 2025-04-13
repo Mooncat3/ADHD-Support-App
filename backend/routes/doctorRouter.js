@@ -13,9 +13,6 @@ router.get("/get", doctorController.get);
 router.get("/patients", doctorController.getPatients);
 router.post("/register", doctorController.registerPatient);
 
-router.get("/createPdf/:patientId", doctorController.getStatisticsFile);
-router.post("/sendFileEmail/:patientId", doctorController.sendFileEmail);
-
 router.get("/activity/:patientId", doctorController.getActivity);
 router.put("/activity/:patientId", doctorController.putActivity);
 

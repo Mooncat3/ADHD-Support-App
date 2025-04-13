@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { configDotenv } from "dotenv";
+
 /**
  * Отправляет email с PDF (или другим вложением), поддерживает path (прямой путь) и content (если из буфера).
  *
@@ -8,7 +8,6 @@ import { configDotenv } from "dotenv";
  * Требуется Google Account с двуфакторной аутентификацией и сгенерированным паролём приложения.
  *
  * @param {Object} config
- * @param {Object} config.auth - { user (почтовый адрес аккаунта), pass (пароль приложения, не аккаунта!) }
  * @param {string} config.to - Кому отправлять письмо
  * @param {string} config.subject - Тема письма
  * @param {string} config.text - Текст письма
@@ -41,13 +40,13 @@ export async function sendEmailWithAttachment({
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth,
-    host: 'smtp.gmail.com',
+    host: "smtp.gmail.com",
     port: 467,
     secure: false,
   });
 
   const mailOptions = {
-    from: `"Stay focused" <${auth.user}>`,
+    from: `"Stay Focused" <${auth.user}>`,
     to,
     subject,
     text,
