@@ -6,7 +6,7 @@ import {
 import { Buffer } from "buffer";
 import * as Crypto from "expo-crypto";
 
-let unauthorizedHandler = () => {};
+let unauthorizedHandler = async () => {};
 
 export function setUnauthorizedHandler(handler) {
   unauthorizedHandler = handler;
@@ -44,7 +44,7 @@ api.interceptors.response.use(
       if (newAccessToken) {
         error.config.headers["Authorization"] = `Bearer ${newAccessToken}`;
         return api.request(error.config);
-      } else unauthorizedHandler();
+      } else await unauthorizedHandler();
     } else {
       if (axios.isAxiosError(error)) {
         const axErr = new Error(error.message);
