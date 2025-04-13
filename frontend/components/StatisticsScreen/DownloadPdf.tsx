@@ -13,13 +13,15 @@ const showError = (message: string) => {
 
 export const handleGetStatistics = async (
   patientId: any,
-  dates: { start: string; end: string }
+  dates: { start: string; end: string },
+  fullName: string
 ) => {
   try {
     const statistics = await api.getStatisticsPdf(
       patientId,
       dates.start,
-      dates.end
+      dates.end,
+      fullName
     );
 
     if (statistics) {

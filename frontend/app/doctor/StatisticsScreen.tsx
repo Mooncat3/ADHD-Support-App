@@ -14,9 +14,7 @@ import { Colors } from "@/constants/Colors";
 import { AntDesign, Feather, FontAwesome } from "@expo/vector-icons";
 import ModalWindow from "@/components/ModalWindow";
 import { validateEmail } from "@/components/ValidateInputs";
-import {
-  filterEmailText,
-} from "@/components/ValidateInputs";
+import { filterEmailText } from "@/components/ValidateInputs";
 import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { handleGetStatistics } from "@/components/StatisticsScreen/DownloadPdf";
@@ -50,7 +48,7 @@ const StatisticsScreen: React.FC = () => {
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>(
     {}
   );
-  const [_email, setEmail] = useState<string>('');
+  const [_email, setEmail] = useState<string>("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState<"confirmation" | "information">(
@@ -58,7 +56,12 @@ const StatisticsScreen: React.FC = () => {
   );
   const [modalMessage, setModalMessage] = useState("");
 
-  useEffect(() => { api.doctorData().then(user => setEmail(user.email)).catch(console.error); }, [])
+  useEffect(() => {
+    api
+      .doctorData()
+      .then((user) => setEmail(user.email))
+      .catch(console.error);
+  }, []);
 
   const handleDateSelect = (date: string, type: "start" | "end") => {
     setDates((prev) => ({ ...prev, [type]: date }));
@@ -220,9 +223,11 @@ const StatisticsScreen: React.FC = () => {
             value={_email}
             onChangeText={(email) => handleChange(email)}
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.sendButton}
-            onPress={() => handleSendStatistics(patientId, dates, _email, formattedFirstName)}
+            onPress={() =>
+              handleSendStatistics(patientId, dates, _email, formattedFirstName)
+            }
           >
             <Feather name="send" size={18} color={Colors.primary} />
           </TouchableOpacity>
@@ -231,7 +236,9 @@ const StatisticsScreen: React.FC = () => {
 
         <TouchableOpacity
           style={styles.downloadButton}
-          onPress={() => handleGetStatistics(patientId, dates)}
+          onPress={() =>
+            handleGetStatistics(patientId, dates, formattedFirstName)
+          }
         >
           <Text style={styles.downloadText}>Скачать статистику</Text>
           <AntDesign name="download" size={20} color={Colors.primary} />
