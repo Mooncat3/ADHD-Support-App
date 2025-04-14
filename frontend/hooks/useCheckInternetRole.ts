@@ -25,7 +25,7 @@ const useCheckInternetRole = (appIsReady: boolean) => {
     });
 
     if (appIsReady) getRole(router);
-  }, [router, appIsReady]);
+  }, [appIsReady]);
 };
 
 export { useCheckInternetRole, getRole };

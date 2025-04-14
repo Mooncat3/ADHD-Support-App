@@ -27,7 +27,7 @@ const Selector: React.FC<SelectorProps> = ({
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [widths, setWidths] = useState<Record<string, number>>({});
   const [offsets, setOffsets] = useState<Record<string, number>>({});
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [ready, setReady] = useState<boolean>(false);
 
   const handleLayout = (event: LayoutChangeEvent, key: string) => {
     const { width, x } = event.nativeEvent.layout;
@@ -36,13 +36,15 @@ const Selector: React.FC<SelectorProps> = ({
   };
 
   useEffect(() => {
-    if (selected in offsets) {
+    if (
+      selected in offsets &&
+      Object.keys(offsets).length === Object.keys(keys).length
+    ) {
       Animated.timing(animatedValue, {
         toValue: offsets[selected] || 0,
         useNativeDriver: false,
         duration: 0,
-      }).start();
-      setIsLoading(false);
+      }).start(() => setReady(true));
     }
   }, [offsets]);
 
@@ -60,7 +62,7 @@ const Selector: React.FC<SelectorProps> = ({
     <View style={styles.container}>
       <>{mainLabel && <Text style={styles.label}>{mainLabel}</Text>}</>
       <View style={[styles.options, !mainLabel && styles.compactOptions]}>
-        {!isLoading && (
+        {ready && (
           <Animated.View
             style={[
               styles.cursor,
@@ -103,6 +105,8 @@ const styles = StyleSheet.create({
   },
   selectorText: {
     textAlign: "center",
+    flexShrink: 1,
+    flexWrap: "wrap",
   },
   label: {
     fontSize: 16,
@@ -114,21 +118,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "#EFF1F5",
     borderRadius: 20,
-    minWidth: 100,
     position: "relative",
+    flexShrink: 1,
   },
   compactOptions: {
     alignSelf: "flex-start",
   },
   option: {
-    paddingLeft: 16,
-    paddingRight: 16,
-    paddingTop: 8,
-    paddingBottom: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1,
+    flexShrink: 0,
   },
   cursor: {
     position: "absolute",
