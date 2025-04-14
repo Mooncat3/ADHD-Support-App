@@ -31,14 +31,12 @@ const PatientList: React.FC = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        console.log("aaaaaa");
         const data = await api.getPatients();
 
         setPatients(data);
         setLoading(false);
       } catch (error: any) {
-        console.log(error);
-        if (error.status && error.status === "404") {
+        if (error.status === "404") {
           setError("Нет данных о пациентах");
         } else {
           setError("Ошибка загрузки данных");
