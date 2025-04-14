@@ -16,7 +16,7 @@ const getRole = async (router: Router) => {
   } else await useHandleLogout(router, false);
 };
 
-const useCheckInternetRole = () => {
+const useCheckInternetRole = (appIsReady: boolean) => {
   const router = useRouter();
 
   useEffect(() => {
@@ -24,8 +24,8 @@ const useCheckInternetRole = () => {
       await useHandleLogout(router);
     });
 
-    getRole(router);
-  }, [router]);
+    if (appIsReady) getRole(router);
+  }, [router, appIsReady]);
 };
 
 export { useCheckInternetRole, getRole };
