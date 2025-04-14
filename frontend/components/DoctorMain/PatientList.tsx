@@ -76,9 +76,8 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.message}>
-        <LoadingModal visible={isLoading} />
-      </View>
+      <LoadingModal visible={isLoading} />
+
       {!isLoading && (
         <FlatList
           style={styles.list}

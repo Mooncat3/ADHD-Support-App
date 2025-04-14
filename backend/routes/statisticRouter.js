@@ -10,5 +10,6 @@ router.use(checkUserRole(0));
 
 router.post("/file/:patientId", statisticController.getStatisticsFile);
 router.post("/mail/:patientId", statisticController.sendFileEmail);
+router.get("/get/:patientId", statisticController.getStatistics);
 
 export default router;

@@ -23,19 +23,16 @@ export default function ButtonPage() {
   const [series, setSeries] = useState(1);
   const { height } = Dimensions.get("window");
 
-  /* Тестовая функция отправки статистики
   useEffect(() => {
     const sendStatistics = async () => {
       try {
-        const response = await api.setStatistics(patientId, testData);
+        const response = await api.setStatistics(testData);
         console.log("Statistics successfully sent", response);
-      } catch (error) {
-        console.log("Error sending statistics:", error);
-      }
+      } catch (error) { console.log("Error sending statistics:", error); }
     };
 
     sendStatistics();
-  }, [patientId]); */
+  }, [patientId]);
 
   const handleClick = () => {
     const now = Date.now();

@@ -28,6 +28,7 @@ import api from "@/scripts/api";
 import { useRouter } from "expo-router";
 import LoadingModal from "@/components/LoadingModal";
 import * as SecureStore from "expo-secure-store";
+import { getRole } from "@/hooks/useCheckInternetRole";
 
 type AuthorizationData = {
   username: string;
@@ -83,23 +84,13 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
       await SecureStore.deleteItemAsync("user");
       api
         .auth(authorizationData)
-        .then(() => {
-          api
-            .getUserRole()
-            .then((response) => {
-              setIsLoading(false);
-              if (response)
-                response.role === 0
-                  ? router.push("/doctor/DoctorMain")
-                  : router.push("/patient/TaskInfoScreen");
-            })
-            .catch((error) => {
-              console.error("Error getting user role:", error);
-            });
+        .then(async () => {
+          await getRole(router);
+          setIsLoading(false);
         })
         .catch((error) => {
+          setError(checkCode(error.status?.toString()));
           setIsLoading(false);
-          setError(checkCode(error.status.toString()));
         });
     } else {
       setIsLoading(false);

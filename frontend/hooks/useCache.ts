@@ -4,7 +4,7 @@ import * as SecureStore from "expo-secure-store";
 const useCache = async (
   key: string,
   apiFunc: any,
-  CACHE_EXPIRE: number = 1 * 30 * 1000
+  CACHE_EXPIRE: number = 30 * 60 * 1000
 ) => {
   try {
     const state = await NetInfo.fetch();

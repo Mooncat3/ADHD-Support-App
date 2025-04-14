@@ -2,7 +2,7 @@ import { View } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
-import useCheckInternetRole from "@/hooks/useCheckInternetRole";
+import { useCheckInternetRole } from "@/hooks/useCheckInternetRole";
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState(false);

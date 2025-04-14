@@ -67,6 +67,9 @@ const TaskScheduleItem: React.FC<TaskScheduleItemProps> = ({
   const isStatisticsMode = !!date && !!time_stat && !!formatTime;
 
   const renderContent = () => {
+    const isTapCountArray = Array.isArray(tap_count);
+    const level = isTapCountArray ? 2 : 1;
+
     if (isStatisticsMode && time_stat && formatTime) {
       return Object.entries(time_stat)
         .filter(([_, stat]) => stat !== undefined)
@@ -88,27 +91,46 @@ const TaskScheduleItem: React.FC<TaskScheduleItemProps> = ({
                 color={stat!.in_time ? "#1BCD1B" : "#F47272"}
               />
             </View>
-            <Text style={styles.seriesText}>
-              1-ая серия: {stat!.tap_count[0]} нажатий
-            </Text>
-            <Text style={styles.seriesText}>
-              2-ая серия: {stat!.tap_count[1]} нажатий
-            </Text>
+            {level === 1 ? (
+              <Text style={styles.seriesText}>
+                1-ая серия: {stat!.tap_count} нажатий
+              </Text>
+            ) : (
+              <>
+                <Text style={styles.seriesText}>
+                  1-ая серия: {stat!.tap_count[0] || 0} нажатий
+                </Text>
+                {stat!.tap_count[1] !== undefined && (
+                  <Text style={styles.seriesText}>
+                    2-ая серия: {stat!.tap_count[1]} нажатий
+                  </Text>
+                )}
+              </>
+            )}
           </View>
         ));
     }
 
-    const tapCounts = Array.isArray(tap_count) ? tap_count : [tap_count];
+    const tapCounts = isTapCountArray ? tap_count : [tap_count];
 
     return (
       <>
-        <Text style={styles.seriesText}>
-          1-ая серия: {tapCounts[0]} нажатий
-        </Text>
-        {level === 2 && tapCounts.length > 1 && (
+        {level === 1 && (
           <Text style={styles.seriesText}>
-            2-ая серия: {tapCounts[1]} нажатий
+            1-ая серия: {tapCounts[0]} нажатий
           </Text>
+        )}
+        {level === 2 && (
+          <>
+            <Text style={styles.seriesText}>
+              1-ая серия: {tapCounts[0]} нажатий
+            </Text>
+            {tapCounts.length > 1 && (
+              <Text style={styles.seriesText}>
+                2-ая серия: {tapCounts[1]} нажатий
+              </Text>
+            )}
+          </>
         )}
       </>
     );
