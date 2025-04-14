@@ -14,22 +14,23 @@ const fetchUserStat = async (patientId, startDate, endDate) => {
   if (userStatistics.length > 0) return userStatistics;
 };
 
-/* export const getStatistics = async (req, res, next) => {
-  const doctorId = req.userId;
-
+export const getStatistics = async (req, res, next) => {
+  const { patientId } = req.params;
+  const { startDate, endDate } = req.query;
+  console.log(patientId, startDate, endDate);
   try {
-    await pool.query(`SET app.user_uuid = '${doctorId}'`);
-    const request = await pool.query(`SELECT * FROM userstatistic`);
+    const userStatistics = await fetchUserStat(patientId, startDate, endDate);
 
-    if (request.rows.length > 0) {
-      return res.status(200).json(request.rows);
+    if (userStatistics) {
+      console.log(userStatistics);
+      return res.status(200).json(userStatistics);
     } else {
       return res.status(404).json({ detail: "Statistic does not exist" });
     }
   } catch (err) {
     next(err);
   }
-}; */
+};
 
 export const getStatisticsFile = async (req, res, next) => {
   const { startDate, endDate } = req.body;

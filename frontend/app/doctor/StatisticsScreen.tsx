@@ -21,6 +21,20 @@ import { handleGetStatistics } from "@/components/StatisticsScreen/DownloadPdf";
 import { handleSendStatistics } from "@/components/StatisticsScreen/SendEmailPdf";
 import api from "@/scripts/api";
 
+interface TimeStatistics {
+  timestamp_start: number;
+  success: boolean;
+  in_time: boolean;
+  tap_count: number[];
+}
+
+interface DateStatistics {
+  date: string;
+  data: Record<string, TimeStatistics>;
+}
+
+type StatisticData = DateStatistics[];
+
 const StatisticsScreen: React.FC = () => {
   const params = useLocalSearchParams<{
     firstname: string;
@@ -55,13 +69,24 @@ const StatisticsScreen: React.FC = () => {
     "confirmation"
   );
   const [modalMessage, setModalMessage] = useState("");
+  const [statisticsData, setStatisticsData] = useState<StatisticData>([]);
 
   useEffect(() => {
     api
       .doctorData()
-      .then((user) => setEmail(user.email))
-      .catch(console.error);
-  }, []);
+      .then((user) => {
+        setEmail(user.email);
+        console.log(patientId, dates.start, dates.end);
+        return api.getStatistics(patientId, dates.start, dates.end);
+      })
+      .then((statisticsResponse) => {
+        setStatisticsData(statisticsResponse);
+        console.log(statisticsData);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, [dates]);
 
   const handleDateSelect = (date: string, type: "start" | "end") => {
     setDates((prev) => ({ ...prev, [type]: date }));
@@ -73,64 +98,6 @@ const StatisticsScreen: React.FC = () => {
       setEmail(email);
     }
   };
-
-  const statisticsData = [
-    {
-      date: "05.01.2025",
-      time_stat: {
-        "10": {
-          timestamp_start: 36000,
-          success: true,
-          in_time: true,
-          tap_count: [12, 15],
-        },
-      },
-    },
-    {
-      date: "08.01.2025",
-      time_stat: {
-        "14": {
-          timestamp_start: 50400,
-          success: false,
-          in_time: false,
-          tap_count: [8, 10],
-        },
-      },
-    },
-    {
-      date: "01.04.2025",
-      time_stat: {
-        "9": {
-          timestamp_start: 32400,
-          success: true,
-          in_time: false,
-          tap_count: [10, 18],
-        },
-        "14": {
-          timestamp_start: 50400,
-          success: true,
-          in_time: false,
-          tap_count: [10, 18],
-        },
-        "19": {
-          timestamp_start: 72000,
-          success: false,
-          in_time: true,
-          tap_count: [10, 8],
-        },
-      },
-    },
-  ];
-
-  const formatDateToISO = (date: string) => {
-    const [day, month, year] = date.split(".");
-    return `${year}-${month}-${day}`;
-  };
-
-  const filteredStatistics = statisticsData.filter(({ date }) => {
-    const isoDate = formatDateToISO(date);
-    return isoDate >= dates.start && isoDate <= dates.end;
-  });
 
   const formatTime = (timestamp: number) => {
     const date = new Date(timestamp * 1000);
@@ -191,25 +158,32 @@ const StatisticsScreen: React.FC = () => {
         </View>
 
         <ScrollView style={styles.statistics}>
-          {filteredStatistics.length === 0 ? (
+          {statisticsData.length === 0 ? (
             <Text style={styles.noDataText}>
               Нет данных за выбранный период
             </Text>
           ) : (
-            filteredStatistics.map(({ date, time_stat }) => (
-              <TaskScheduleItem
-                key={date}
-                id={date}
-                time={date}
-                isExpanded={expandedDates[date]}
-                onToggle={() =>
-                  setExpandedDates((prev) => ({ ...prev, [date]: !prev[date] }))
-                }
-                date={date}
-                time_stat={time_stat}
-                formatTime={formatTime}
-              />
-            ))
+            statisticsData.map(({ date, data }) => {
+              console.log("time_stat:", data);
+              const timeStat = data ? data.time_stat : {};
+              return (
+                <TaskScheduleItem
+                  key={date}
+                  id={date}
+                  time={date}
+                  isExpanded={expandedDates[date]}
+                  onToggle={() =>
+                    setExpandedDates((prev) => ({
+                      ...prev,
+                      [date]: !prev[date],
+                    }))
+                  }
+                  date={date}
+                  time_stat={timeStat}
+                  formatTime={formatTime}
+                />
+              );
+            })
           )}
         </ScrollView>
       </View>
@@ -448,6 +422,7 @@ const styles = StyleSheet.create({
   },
   noDataText: {
     fontSize: 16,
+    textAlign: "center",
     color: Colors.headerText,
     fontFamily: "Montserrat-SemiBold",
   },
