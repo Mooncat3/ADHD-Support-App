@@ -22,26 +22,23 @@ interface Patient {
   activity?: string;
 }
 
-interface PatientListProps {
-  doctorId: string;
-}
-
-const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
+const PatientList: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Doctor ID:", doctorId);
     const fetchPatients = async () => {
       try {
+        console.log("aaaaaa");
         const data = await api.getPatients();
 
         setPatients(data);
         setLoading(false);
       } catch (error: any) {
-        if (error.status == "404") {
+        console.log(error);
+        if (error.status && error.status === "404") {
           setError("Нет данных о пациентах");
         } else {
           setError("Ошибка загрузки данных");
@@ -51,7 +48,7 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
     };
 
     fetchPatients();
-  }, [doctorId]);
+  }, []);
 
   const handlePatientChoose = (patient: Patient) => {
     router.push({
@@ -69,7 +66,7 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
   if (error) {
     return (
       <View style={styles.message}>
-        <Text>Ошибка: {error}</Text>
+        <Text style={styles.messageText}>{error}</Text>
       </View>
     );
   }
@@ -81,11 +78,12 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
       {!isLoading && (
         <FlatList
           style={styles.list}
-          data={patients}
+          data={patients.sort((a, b) => a.surname.localeCompare(b.surname))}
           contentContainerStyle={{ gap: 12 }}
           keyExtractor={(item) => item.patient_id}
           renderItem={({ item }) => (
             <TouchableOpacity
+              activeOpacity={0.8}
               style={styles.item}
               onPress={() => handlePatientChoose(item)}
             >
@@ -106,9 +104,12 @@ const PatientList: React.FC<PatientListProps> = ({ doctorId }) => {
 const styles = StyleSheet.create({
   message: {
     paddingTop: 20,
-    fontFamily: "Montserrat-SemiBold",
-    justifyContent: "center",
     alignItems: "center",
+  },
+  messageText: {
+    color: Colors.headerText,
+    fontSize: 18,
+    fontFamily: "Montserrat-SemiBold",
   },
   container: {
     flex: 1,

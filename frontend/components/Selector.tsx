@@ -80,9 +80,11 @@ const Selector: React.FC<SelectorProps> = ({
             onLayout={(event) => handleLayout(event, k)}
           >
             <Text
-              style={
-                selected === k ? styles.selectedText : styles.unselectedText
-              }
+              numberOfLines={1}
+              style={[
+                selected === k ? styles.selectedText : styles.unselectedText,
+                styles.selectorText,
+              ]}
             >
               {v}
             </Text>
@@ -98,6 +100,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+  },
+  selectorText: {
+    textAlign: "center",
   },
   label: {
     fontSize: 16,
