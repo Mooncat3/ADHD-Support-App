@@ -14,16 +14,15 @@ import ModalWindow from "@/components/ModalWindow";
 import { Colors } from "@/constants/Colors";
 import { useRouter } from "expo-router";
 import api from "@/scripts/api";
-import LoadingModal from "@/components/LoadingModal";
-import * as SecureStore from "expo-secure-store";
-import NetInfo from "@react-native-community/netinfo";
 import useHandleLogout from "@/hooks/useHandleLogout";
+import useCache from "@/hooks/useCache";
 
 type ActivityData = {
   level: number;
   selected_time: string[];
   tap_count: number | number[];
 };
+
 interface User {
   id: string;
   activity: ActivityData;
@@ -32,7 +31,11 @@ interface User {
   surname: string;
 }
 
+const CACHE_EXPIRE = 12 * 60 * 60 * 1000;
+
 const TaskInfoScreen: React.FC = () => {
+  const router = useRouter();
+
   const [taskData, setTaskData] = useState<
     {
       id: string;
@@ -41,75 +44,49 @@ const TaskInfoScreen: React.FC = () => {
       tap_count: number | number[];
     }[]
   >([]);
-  const [loading, setLoading] = useState<boolean>(false);
+
+  const [showConfirm, setShowConfirm] = useState(false);
   const [headerUserName, setHeaderUserName] = useState<string>("");
-  const [activityData, setActivityData] = useState<ActivityData | null>(null);
-  const [loadingMessage, setLoadingMessage] =
-    useState<string>("Загрузка данных...");
-  const CACHE_EXPIRE = 1 * 30 * 1000;
-  const [user, setUser] = useState<User | null>(null);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [refreshing, setRefreshing] = useState<boolean>(true);
   const [taskInstructionText, setTaskInstructionText] = useState<string>("");
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {}
   );
-  const processUserData = (userData: User) => {
-    if (!userData) {
-      console.warn("No user data available");
-      return;
-    }
 
+  const [user, setUser] = useState<User>();
+
+  const processUserData = (userData: User) => {
     const formattedFirstName = `${userData.surname} ${userData.firstname[0]}. ${userData.lastname[0]}.`;
     setHeaderUserName(formattedFirstName);
 
-    setActivityData(userData.activity);
+    if (!userData.activity || !userData.activity?.selected_time)
+      return setTaskInstructionText("Не удалось загрузить задания");
+
+    const instruction =
+      userData.activity.selected_time.length === 0
+        ? "Упс, заданий на сегодня нет."
+        : userData.activity.level === 1
+        ? "Задание: выполните одну серию нажатий"
+        : "Задание: выполните две серии нажатий с перерывом в минуту";
+    setTaskInstructionText(instruction);
+
     generateTaskData(userData.activity);
   };
+
+  const fetchData = async () => {
+    setRefreshing(true);
+    const userCached = await useCache("user", api.patientData, CACHE_EXPIRE);
+    setUser(userCached);
+    setRefreshing(false);
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
-  const fetchData = async () => {
-    try {
-      const state = await NetInfo.fetch();
-      const cachedUser = await SecureStore.getItemAsync("user");
-      let parsedUser;
 
-      if (cachedUser) {
-        parsedUser = JSON.parse(cachedUser);
-      }
-      if (
-        state.isConnected &&
-        state.isInternetReachable &&
-        (!parsedUser || Date.now() - parsedUser.timestamp > CACHE_EXPIRE)
-      ) {
-        console.log("Fetching fresh data");
-        setLoadingMessage("Загрузка активности...");
-        setRefreshing(true);
-
-        const fetchUser = await api.patientData();
-        console.log("Fetched user:", fetchUser);
-        setUser(fetchUser);
-        processUserData(fetchUser);
-
-        await SecureStore.setItemAsync(
-          "user",
-          JSON.stringify({
-            userData: fetchUser,
-            timestamp: Date.now(),
-          })
-        );
-      } else {
-        console.log("using CachedData");
-        console.log(Date.now() - parsedUser.timestamp);
-        setUser(parsedUser.userData);
-        processUserData(parsedUser.userData);
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    } finally {
-      setRefreshing(false);
-    }
-  };
+  useEffect(() => {
+    if (user) processUserData(user);
+  }, [user]);
 
   const generateTaskData = (activity: ActivityData) => {
     if (activity.selected_time) {
@@ -131,59 +108,31 @@ const TaskInfoScreen: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (!activityData || !activityData.selected_time)
-      return setTaskInstructionText("Не удалось загрузить задания");
-    const instruction =
-      activityData.selected_time.length === 0
-        ? "Упс, заданий на сегодня нет."
-        : activityData.level === 1
-        ? "Задание: выполните одну серию нажатий"
-        : "Задание: выполните две серии нажатий с перерывом в минуту";
-
-    setTaskInstructionText(instruction);
-  }, [activityData]);
-
-  const router = useRouter();
   const handleStartTask = () => {
-    if (user) {
+    if (user)
       router.push({
         pathname: "/patient/TaskButtonScreen",
         params: {
-          id: user.id,
+          patientId: user.id,
           level: user.activity.level,
-          selected_time: user.activity.selected_time,
+          selectedTime: user.activity.selected_time,
         },
       });
-    } else {
-      return;
-    }
   };
+
   const handleLogout = () => {
     setShowConfirm(true);
   };
-  const [showConfirm, setShowConfirm] = useState(false);
 
-  const clearUserCache = async () => {
-    try {
-      await SecureStore.deleteItemAsync("user");
-      console.log("Кеш пользователя очищен");
-    } catch (error) {
-      console.error("Ошибка при очистке кеша:", error);
-    }
-  };
   const handleLogoutConfirm = async () => {
-    await clearUserCache();
     setShowConfirm(false);
     await useHandleLogout(router);
   };
+
   const handleToggle = (id: string) => {
     setExpandedItems((prev) => ({
       [id]: !prev[id],
     }));
-  };
-  const onClose = () => {
-    setLoading(false);
   };
 
   return (
@@ -211,7 +160,7 @@ const TaskInfoScreen: React.FC = () => {
             time={task.time}
             tap_count={task.tap_count}
             level={task.level}
-            isExpanded={!!expandedItems[task.id]}
+            isExpanded={expandedItems[task.id]}
             onToggle={() => handleToggle(task.id)}
           />
         ))}
@@ -222,7 +171,7 @@ const TaskInfoScreen: React.FC = () => {
           <FooterButton
             key="1"
             onPress={handleStartTask}
-            label={"К заданию"}
+            label="К заданию"
             secondary={true}
           />,
         ]}
@@ -235,11 +184,6 @@ const TaskInfoScreen: React.FC = () => {
         onCancel={() => setShowConfirm(false)}
         confirmText="Выйти"
         cancelText="Отмена"
-      />
-      <LoadingModal
-        visible={loading}
-        message={loadingMessage}
-        onClose={onClose}
       />
     </View>
   );

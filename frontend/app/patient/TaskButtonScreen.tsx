@@ -37,9 +37,9 @@ export default function ButtonPage() {
   const params = useLocalSearchParams<{
     level: string;
     patientId: string;
-    selected_time: string;
+    selectedTime: string;
   }>();
-  const { level = "", patientId = "", selected_time = "" } = params;
+  const { level = "", patientId = "", selectedTime = "" } = params;
   const [status, setStatus] = useState("Не начато");
   const { height } = Dimensions.get("window");
   [

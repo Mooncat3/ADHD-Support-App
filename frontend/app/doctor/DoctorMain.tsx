@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Keyboard } from "react-native";
+import { View, StyleSheet, ScrollView, Keyboard, Text } from "react-native";
 import Header from "@/components/Header";
 import RegistrationForm from "@/components/DoctorMain/RegistrationForm";
 import PatientList from "@/components/DoctorMain/PatientList";
@@ -57,7 +57,7 @@ const DoctorMain: React.FC = () => {
         }
       })
       .catch((error) => {
-        setError(checkCode(error.status.toString()));
+        setError(checkCode(error.status?.toString()));
         console.error("Error getting user role:", error);
       });
   }, []);
@@ -199,9 +199,15 @@ const DoctorMain: React.FC = () => {
         />
       </View>
 
+      {error && (
+        <View style={styles.message}>
+          <Text style={styles.messageText}>{error}</Text>
+        </View>
+      )}
+
       {selc === "patient_list" && doctorId && (
         <View style={styles.list}>
-          <PatientList doctorId={doctorId} />
+          <PatientList />
         </View>
       )}
 
@@ -263,6 +269,15 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     flex: 1,
+  },
+  message: {
+    paddingTop: 20,
+    alignItems: "center",
+  },
+  messageText: {
+    color: Colors.headerText,
+    fontSize: 18,
+    fontFamily: "Montserrat-SemiBold",
   },
 });
 
