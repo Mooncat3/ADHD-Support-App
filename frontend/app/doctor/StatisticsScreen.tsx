@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -8,6 +8,8 @@ import {
   ScrollView,
   TextInput,
   ToastAndroid,
+  Animated,
+  Easing,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
@@ -22,6 +24,7 @@ import { handleGetStatistics } from "@/components/StatisticsScreen/DownloadPdf";
 import { handleSendStatistics } from "@/components/StatisticsScreen/SendEmailPdf";
 import "@/components/StatisticsScreen/SetLocaleDate";
 import api from "@/scripts/api";
+import LoadingModal from "@/components/LoadingModal";
 
 interface TimeStatistics {
   timestamp_start: number;
@@ -47,16 +50,16 @@ const StatisticsScreen: React.FC = () => {
   }>();
 
   function formatDate(date: string): string {
-    return date.slice(0, 10).split("-").reverse().join(".");
+    return date.split("-").reverse().join(".");
   }
 
   const dateNow = new Date();
   const startDate = new Date(dateNow);
-  startDate.setFullYear(dateNow.getFullYear() - 1);
+  startDate.setMonth(dateNow.getMonth() - 1);
 
   const [dates, setDates] = useState({
-    start: startDate.toISOString(),
-    end: dateNow.toISOString(),
+    start: startDate.toISOString().split("T")[0],
+    end: dateNow.toISOString().split("T")[0],
   });
 
   const {
@@ -80,21 +83,20 @@ const StatisticsScreen: React.FC = () => {
   );
   const [modalMessage, setModalMessage] = useState("");
   const [statisticsData, setStatisticsData] = useState<StatisticData>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     api
       .doctorData()
       .then((user) => {
         setEmail(user.email);
-        console.log(patientId, dates.start, dates.end);
         return api.getStatistics(patientId, dates.start, dates.end);
       })
       .then((statisticsResponse) => {
         setStatisticsData(statisticsResponse);
-        console.log(statisticsData);
       })
       .catch((err) => {
-        console.error(err);
+        console.log(err);
       });
   }, [dates]);
 
@@ -120,7 +122,6 @@ const StatisticsScreen: React.FC = () => {
         return;
       }
     }
-
     setDates((prevDates) => ({
       ...prevDates,
       [type]: selectedDate,
@@ -153,9 +154,18 @@ const StatisticsScreen: React.FC = () => {
     setModalVisible(true);
   };
 
-  const handleConfirmSend = () => {
-    setModalMessage(`Отправлено на почту ${_email}`);
-    setModalType("information");
+  const handleConfirmSend = async () => {
+    try {
+      setIsLoading(true);
+      await handleSendStatistics(patientId, dates, _email, formattedFirstName);
+      setModalMessage(`Отправлено на почту ${_email}`);
+      setModalType("information");
+    } catch (err) {
+      setTimeout(() => {
+        setModalVisible(false);
+      }, 2000);
+    }
+    setIsLoading(false);
   };
 
   const handleModalClose = () => {
@@ -165,26 +175,47 @@ const StatisticsScreen: React.FC = () => {
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 
   const getMarkedDates = () => {
-    const markedDates: Record<
-      string,
-      { selected: boolean; selectedColor: string }
-    > = {};
-    if (showCalendar === "start") {
-      markedDates[dates.start] = {
-        selected: true,
-        selectedColor: Colors.main,
-      };
-    } else if (showCalendar === "end") {
-      markedDates[dates.end] = {
-        selected: true,
-        selectedColor: Colors.main,
-      };
+    console.log(dates);
+    const markedDates: Record<string, any> = {};
+    const startDate = new Date(dates.start);
+    const endDate = new Date(dates.end);
+
+    const startStr = dates.start.split("T")[0];
+    const endStr = dates.end.split("T")[0];
+
+    let current = new Date(startDate);
+
+    while (current <= endDate) {
+      const dateStr = current.toISOString().split("T")[0];
+
+      if (dateStr === startStr) {
+        markedDates[dateStr] = {
+          startingDay: true,
+          color: Colors.main,
+          textColor: "white",
+        };
+      } else if (dateStr === endStr) {
+        markedDates[dateStr] = {
+          endingDay: true,
+          color: Colors.main,
+          textColor: "white",
+        };
+      } else {
+        markedDates[dateStr] = {
+          color: "#CFF0FF",
+          textColor: "black",
+        };
+      }
+
+      current.setDate(current.getDate() + 1);
     }
+
     return markedDates;
   };
 
   return (
     <View style={styles.container}>
+      <LoadingModal visible={isLoading} message="Отправка.." />
       <Header title={formattedFirstName} createBackButton />
       <View style={styles.content}>
         <View style={styles.dateSelection}>
@@ -218,9 +249,8 @@ const StatisticsScreen: React.FC = () => {
             </Text>
           ) : (
             statisticsData.map(({ date, data }) => {
-              console.log("time_stat:", date);
               const timeStat = data ? data.time_stat : {};
-              date = formatDate(date);
+              date = formatDate(date.slice(0, 10));
               return (
                 <TaskScheduleItem
                   key={date}
@@ -254,9 +284,7 @@ const StatisticsScreen: React.FC = () => {
           />
           <TouchableOpacity
             style={styles.sendButton}
-            onPress={() =>
-              handleSendStatistics(patientId, dates, _email, formattedFirstName)
-            }
+            onPress={() => handleSendPress()}
           >
             <Feather name="send" size={18} color={Colors.primary} />
           </TouchableOpacity>
@@ -287,44 +315,44 @@ const StatisticsScreen: React.FC = () => {
       />
 
       {showCalendar && (
-        <Modal
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowCalendar(null)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Calendar
-                current={showCalendar === "start" ? dates.start : dates.end}
-                onDayPress={(day: { dateString: string }) =>
-                  handleDateSelect(day.dateString, showCalendar)
-                }
-                markedDates={getMarkedDates()}
-                theme={{
-                  calendarBackground: Colors.primary,
-                  selectedDayBackgroundColor: Colors.main,
-                  selectedDayTextColor: Colors.primary,
-                  todayTextColor: Colors.main,
-                  dayTextColor: Colors.headerText,
-                  arrowColor: Colors.main,
-                }}
-              />
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => setShowCalendar(null)}
-              >
-                <Text style={styles.closeButtonText}>OK</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
+        <View style={styles.modalOverlay}>
+          <Animated.View style={[styles.modalContent]}>
+            <Calendar
+              key={showCalendar}
+              markingType={"period"}
+              current={showCalendar === "start" ? dates.start : dates.end}
+              onDayPress={(day: { dateString: string }) =>
+                handleDateSelect(day.dateString, showCalendar)
+              }
+              markedDates={getMarkedDates()}
+              theme={{
+                calendarBackground: Colors.primary,
+                selectedDayBackgroundColor: Colors.main,
+                selectedDayTextColor: Colors.primary,
+                todayTextColor: Colors.main,
+                dayTextColor: Colors.headerText,
+                arrowColor: Colors.main,
+              }}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowCalendar(null)}
+            >
+              <Text style={styles.closeButtonText}>OK</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.backgroundScreen },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundScreen,
+    position: "relative",
+  },
   content: { flex: 1 },
   dateSelection: {
     flexDirection: "row",
@@ -388,15 +416,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
+    position: "absolute",
+    top: 170,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
-    width: "90%",
+    elevation: 2,
+    borderRadius: 10,
+    width: 340,
     backgroundColor: Colors.primary,
-    borderRadius: 8,
     padding: 16,
   },
   closeButton: {
@@ -472,6 +503,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   noDataText: {
+    paddingTop: 10,
     fontSize: 16,
     textAlign: "center",
     color: Colors.headerText,
