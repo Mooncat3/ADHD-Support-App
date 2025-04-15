@@ -139,6 +139,10 @@ const StatisticsScreen: React.FC = () => {
     const minutes = Math.floor((timestamp % 3600) / 60)
       .toString()
       .padStart(2, "0");
+    const hours = Math.floor(timestamp / 3600).toString();
+    const minutes = Math.floor((timestamp % 3600) / 60)
+      .toString()
+      .padStart(2, "0");
     return `${hours}:${minutes}`;
   };
 
@@ -243,6 +247,7 @@ const StatisticsScreen: React.FC = () => {
         </View>
 
         <ScrollView style={styles.statistics}>
+          {statisticsData.length === 0 ? (
           {statisticsData.length === 0 ? (
             <Text style={styles.noDataText}>
               Нет данных за выбранный период
@@ -505,6 +510,7 @@ const styles = StyleSheet.create({
   noDataText: {
     paddingTop: 10,
     fontSize: 16,
+    textAlign: "center",
     textAlign: "center",
     color: Colors.headerText,
     fontFamily: "Montserrat-SemiBold",
