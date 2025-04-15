@@ -218,7 +218,7 @@ const StatisticsScreen: React.FC = () => {
           <Text style={styles.label}>Отправить на почту</Text>
           <TextInput
             style={styles.emailInput}
-            placeholder=""
+            placeholder="doctor@mail.ru"
             placeholderTextColor={Colors.headerText}
             value={_email}
             onChangeText={(email) => handleChange(email)}
