@@ -126,13 +126,16 @@ export default function ButtonPage() {
         tapState.firstSeries.lastTap &&
         now - tapState.firstSeries.lastTap > 10000
       ) {
+        if (level === "1") {
+          setStatus("Завершено");
+        }
         console.log(tapState);
         setTapState((prev) => ({
           ...prev,
           currentMode: "idle",
           firstSeries: {
-            count: tapState.firstSeries.count,
-            lastTap: tapState.firstSeries.lastTap,
+            count: level === "1" ? 0 : tapState.firstSeries.count,
+            lastTap: level === "1" ? null : tapState.firstSeries.lastTap,
           },
         }));
       }
