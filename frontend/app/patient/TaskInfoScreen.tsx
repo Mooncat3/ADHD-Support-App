@@ -50,7 +50,6 @@ const TaskInfoScreen: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [taskInstructionText, setTaskInstructionText] = useState<string>("");
-  const [patientId, setPatientId] = useState<string | null>(null);
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {}
   );
@@ -147,10 +146,18 @@ const TaskInfoScreen: React.FC = () => {
 
   const router = useRouter();
   const handleStartTask = () => {
-    router.push({
-      pathname: "/patient/TaskButtonScreen",
-      params: { patientId },
-    });
+    if (user) {
+      router.push({
+        pathname: "/patient/TaskButtonScreen",
+        params: {
+          id: user.id,
+          level: user.activity.level,
+          selected_time: user.activity.selected_time,
+        },
+      });
+    } else {
+      return;
+    }
   };
   const handleLogout = () => {
     setShowConfirm(true);
