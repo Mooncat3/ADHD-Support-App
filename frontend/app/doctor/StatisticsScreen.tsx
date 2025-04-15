@@ -7,6 +7,7 @@ import {
   Modal,
   ScrollView,
   TextInput,
+  ToastAndroid,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
@@ -19,6 +20,7 @@ import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { handleGetStatistics } from "@/components/StatisticsScreen/DownloadPdf";
 import { handleSendStatistics } from "@/components/StatisticsScreen/SendEmailPdf";
+import "@/components/StatisticsScreen/SetLocaleDate";
 import api from "@/scripts/api";
 
 interface TimeStatistics {
@@ -44,9 +46,17 @@ const StatisticsScreen: React.FC = () => {
     patientId: string;
   }>();
 
+  function formatDate(date: string): string {
+    return date.slice(0, 10).split("-").reverse().join(".");
+  }
+
+  const dateNow = new Date();
+  const startDate = new Date(dateNow);
+  startDate.setFullYear(dateNow.getFullYear() - 1);
+
   const [dates, setDates] = useState({
-    start: "2025-01-01",
-    end: "2025-12-31",
+    start: startDate.toISOString(),
+    end: dateNow.toISOString(),
   });
 
   const {
@@ -88,9 +98,33 @@ const StatisticsScreen: React.FC = () => {
       });
   }, [dates]);
 
-  const handleDateSelect = (date: string, type: "start" | "end") => {
-    setDates((prev) => ({ ...prev, [type]: date }));
-    setShowCalendar(null);
+  const handleDateSelect = (selectedDate: string, type: "start" | "end") => {
+    const selectedDateObj = new Date(selectedDate);
+    const startDateObj = new Date(dates.start);
+    const endDateObj = new Date(dates.end);
+
+    if (type === "start") {
+      if (selectedDateObj > endDateObj) {
+        ToastAndroid.show(
+          "Дата начала не может быть позже даты окончания",
+          ToastAndroid.SHORT
+        );
+        return;
+      }
+    } else if (type === "end") {
+      if (selectedDateObj < startDateObj) {
+        ToastAndroid.show(
+          "Дата окончания не может быть раньше даты начала",
+          ToastAndroid.SHORT
+        );
+        return;
+      }
+    }
+
+    setDates((prevDates) => ({
+      ...prevDates,
+      [type]: selectedDate,
+    }));
   };
 
   const handleChange = (email: string) => {
@@ -130,6 +164,25 @@ const StatisticsScreen: React.FC = () => {
 
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 
+  const getMarkedDates = () => {
+    const markedDates: Record<
+      string,
+      { selected: boolean; selectedColor: string }
+    > = {};
+    if (showCalendar === "start") {
+      markedDates[dates.start] = {
+        selected: true,
+        selectedColor: Colors.main,
+      };
+    } else if (showCalendar === "end") {
+      markedDates[dates.end] = {
+        selected: true,
+        selectedColor: Colors.main,
+      };
+    }
+    return markedDates;
+  };
+
   return (
     <View style={styles.container}>
       <Header title={formattedFirstName} createBackButton />
@@ -141,7 +194,7 @@ const StatisticsScreen: React.FC = () => {
               style={styles.dateButton}
               onPress={() => setShowCalendar("start")}
             >
-              <Text style={styles.dateValue}>{dates.start}</Text>
+              <Text style={styles.dateValue}>{formatDate(dates.start)}</Text>
               <AntDesign name="calendar" size={20} color={Colors.headerText} />
             </TouchableOpacity>
           </View>
@@ -152,7 +205,7 @@ const StatisticsScreen: React.FC = () => {
               style={styles.dateButton}
               onPress={() => setShowCalendar("end")}
             >
-              <Text style={styles.dateValue}>{dates.end}</Text>
+              <Text style={styles.dateValue}>{formatDate(dates.end)}</Text>
               <AntDesign name="calendar" size={20} color={Colors.headerText} />
             </TouchableOpacity>
           </View>
@@ -165,8 +218,9 @@ const StatisticsScreen: React.FC = () => {
             </Text>
           ) : (
             statisticsData.map(({ date, data }) => {
-              console.log("time_stat:", data);
+              console.log("time_stat:", date);
               const timeStat = data ? data.time_stat : {};
+              date = formatDate(date);
               return (
                 <TaskScheduleItem
                   key={date}
@@ -241,15 +295,11 @@ const StatisticsScreen: React.FC = () => {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Calendar
+                current={showCalendar === "start" ? dates.start : dates.end}
                 onDayPress={(day: { dateString: string }) =>
                   handleDateSelect(day.dateString, showCalendar)
                 }
-                markedDates={{
-                  [dates[showCalendar]]: {
-                    selected: true,
-                    selectedColor: Colors.main,
-                  },
-                }}
+                markedDates={getMarkedDates()}
                 theme={{
                   calendarBackground: Colors.primary,
                   selectedDayBackgroundColor: Colors.main,
