@@ -506,7 +506,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     fontSize: 16,
     textAlign: "center",
-    textAlign: "center",
     color: Colors.headerText,
     fontFamily: "Montserrat-SemiBold",
   },
