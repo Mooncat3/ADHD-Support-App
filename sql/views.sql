@@ -37,6 +37,5 @@ FROM users u
 LEFT JOIN userrelations ur ON ur.patient_id = u.user_id
 WHERE u.user_id = current_setting('app.user_uuid')::UUID
 
-
 GRANT SELECT ON users_pub TO backend
 
