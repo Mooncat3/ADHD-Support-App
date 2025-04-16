@@ -54,6 +54,8 @@ export const validateForm = (formData: any, isRegistration: boolean = true) => {
     errors.password = "Пароль обязателен для заполнения";
   } else if (formData.password.length < 8) {
     errors.password = "Пароль должен содержать не менее 8 символов";
+  } else if (formData.password != formData.passwordRepeat) {
+    errors.passwordRepeat = "Пароли не совпадают";
   }
 
   if (isRegistration) {

@@ -87,7 +87,7 @@ const TextField: React.FC<Props> = (props) => {
                 {
                   translateX: focusAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [-10, -30],
+                    outputRange: [-10, -38],
                   }),
                 },
               ],
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: "Montserrat-Regular",
     fontSize: 16,
-    maxWidth: 150,
+    minWidth: 160,
     flexShrink: 1,
   },
   error: {

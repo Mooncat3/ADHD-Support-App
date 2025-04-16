@@ -9,6 +9,7 @@ import {
   ToastAndroid,
   Animated,
   ActivityIndicator,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
@@ -34,7 +35,9 @@ interface TimeStatistics {
 
 interface DateStatistics {
   date: string;
-  data: Record<string, TimeStatistics>;
+  data: {
+    time_stat: Record<string, TimeStatistics>;
+  };
 }
 
 type StatisticData = DateStatistics[];
@@ -85,6 +88,7 @@ const StatisticsScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingStatistics, setIsLoadingStatistics] =
     useState<boolean>(false);
+  const [tempDates, setTempDates] = useState(dates);
 
   useEffect(() => {
     setIsLoadingStatistics(true);
@@ -105,29 +109,8 @@ const StatisticsScreen: React.FC = () => {
   }, [dates]);
 
   const handleDateSelect = (selectedDate: string, type: "start" | "end") => {
-    const selectedDateObj = new Date(selectedDate);
-    const startDateObj = new Date(dates.start);
-    const endDateObj = new Date(dates.end);
-
-    if (type === "start") {
-      if (selectedDateObj > endDateObj) {
-        ToastAndroid.show(
-          "Дата начала не может быть позже даты окончания",
-          ToastAndroid.SHORT
-        );
-        return;
-      }
-    } else if (type === "end") {
-      if (selectedDateObj < startDateObj) {
-        ToastAndroid.show(
-          "Дата окончания не может быть раньше даты начала",
-          ToastAndroid.SHORT
-        );
-        return;
-      }
-    }
-    setDates((prevDates) => ({
-      ...prevDates,
+    setTempDates((prev) => ({
+      ...prev,
       [type]: selectedDate,
     }));
   };
@@ -178,14 +161,13 @@ const StatisticsScreen: React.FC = () => {
 
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 
-  const getMarkedDates = () => {
-    console.log(dates);
+  const getMarkedDates = (range: { start: string; end: string }) => {
     const markedDates: Record<string, any> = {};
-    const startDate = new Date(dates.start);
-    const endDate = new Date(dates.end);
+    const startDate = new Date(range.start);
+    const endDate = new Date(range.end);
 
-    const startStr = dates.start.split("T")[0];
-    const endStr = dates.end.split("T")[0];
+    const startStr = range.start.split("T")[0];
+    const endStr = range.end.split("T")[0];
 
     let current = new Date(startDate);
 
@@ -255,8 +237,13 @@ const StatisticsScreen: React.FC = () => {
             </Text>
           ) : (
             statisticsData.map(({ date, data }) => {
-              const timeStat = data ? data.time_stat : {};
               date = formatDate(date.slice(0, 10));
+              const timeStat = data?.time_stat ?? {};
+              const firstKey = Object.keys(timeStat)[0];
+              const tapCount = firstKey
+                ? timeStat[firstKey]?.tap_count
+                : undefined;
+              console.log("tap", tapCount);
               return (
                 <TaskScheduleItem
                   key={date}
@@ -270,6 +257,7 @@ const StatisticsScreen: React.FC = () => {
                     }))
                   }
                   date={date}
+                  level={Array.isArray(tapCount) ? 2 : undefined}
                   time_stat={timeStat}
                   formatTime={formatTime}
                 />
@@ -321,33 +309,45 @@ const StatisticsScreen: React.FC = () => {
       />
 
       {showCalendar && (
-        <View style={styles.modalOverlay}>
-          <Animated.View style={[styles.modalContent]}>
-            <Calendar
-              key={showCalendar}
-              markingType={"period"}
-              current={showCalendar === "start" ? dates.start : dates.end}
-              onDayPress={(day: { dateString: string }) =>
-                handleDateSelect(day.dateString, showCalendar)
-              }
-              markedDates={getMarkedDates()}
-              theme={{
-                calendarBackground: Colors.primary,
-                selectedDayBackgroundColor: Colors.main,
-                selectedDayTextColor: Colors.primary,
-                todayTextColor: Colors.main,
-                dayTextColor: Colors.headerText,
-                arrowColor: Colors.main,
-              }}
-            />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowCalendar(null)}
-            >
-              <Text style={styles.closeButtonText}>OK</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
+        <TouchableWithoutFeedback
+          onPress={() => {
+            setTempDates(dates);
+            setShowCalendar(null);
+          }}
+        >
+          <View style={styles.modalOverlay}>
+            <Animated.View style={[styles.modalContent]}>
+              <Calendar
+                key={showCalendar}
+                markingType={"period"}
+                current={showCalendar === "start" ? dates.start : dates.end}
+                onDayPress={(day: { dateString: string }) =>
+                  handleDateSelect(day.dateString, showCalendar)
+                }
+                markedDates={getMarkedDates(tempDates)}
+                minDate={showCalendar === "end" ? dates.start : undefined}
+                maxDate={showCalendar === "start" ? dates.end : undefined}
+                theme={{
+                  calendarBackground: Colors.primary,
+                  selectedDayBackgroundColor: Colors.main,
+                  selectedDayTextColor: Colors.primary,
+                  todayTextColor: Colors.main,
+                  dayTextColor: Colors.headerText,
+                  arrowColor: Colors.main,
+                }}
+              />
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => {
+                  setDates(tempDates);
+                  setShowCalendar(null);
+                }}
+              >
+                <Text style={styles.closeButtonText}>OK</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
+        </TouchableWithoutFeedback>
       )}
     </View>
   );

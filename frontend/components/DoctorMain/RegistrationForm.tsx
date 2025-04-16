@@ -91,7 +91,7 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
       if (updatedFields.password !== updatedFields.passwordRepeat) {
         errors.passwordRepeat = "Пароли не совпадают";
       } else {
-        errors.passwordRepeat = "";
+        delete errors.passwordRepeat;
       }
     }
 
@@ -130,7 +130,7 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
           <Pressable
             onPress={handlePasswordVisibility1}
             style={passwordInputStyles.iconButton}
-            hitSlop={{ top: 40, bottom: 40, left: 40, right: 40 }}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
           >
             <Ionicons name={rightIcon1} size={24} color={Colors.secondary} />
           </Pressable>
@@ -139,7 +139,7 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
           <Pressable
             onPress={handlePasswordVisibility2}
             style={passwordInputStyles.iconButton}
-            hitSlop={{ top: 40, bottom: 40, left: 40, right: 40 }}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
           >
             <Ionicons name={rightIcon2} size={24} color={Colors.secondary} />
           </Pressable>
