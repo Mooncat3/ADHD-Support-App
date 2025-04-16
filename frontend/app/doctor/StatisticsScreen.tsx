@@ -4,12 +4,11 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  Modal,
   ScrollView,
   TextInput,
   ToastAndroid,
   Animated,
-  Easing,
+  ActivityIndicator,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
@@ -84,8 +83,11 @@ const StatisticsScreen: React.FC = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [statisticsData, setStatisticsData] = useState<StatisticData>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingStatistics, setIsLoadingStatistics] =
+    useState<boolean>(false);
 
   useEffect(() => {
+    setIsLoadingStatistics(true);
     api
       .doctorData()
       .then((user) => {
@@ -94,9 +96,11 @@ const StatisticsScreen: React.FC = () => {
       })
       .then((statisticsResponse) => {
         setStatisticsData(statisticsResponse);
+        setIsLoadingStatistics(false);
       })
       .catch((err) => {
         console.log(err);
+        setIsLoadingStatistics(false);
       });
   }, [dates]);
 
@@ -243,7 +247,9 @@ const StatisticsScreen: React.FC = () => {
         </View>
 
         <ScrollView style={styles.statistics}>
-          {statisticsData.length === 0 ? (
+          {isLoadingStatistics ? (
+            <ActivityIndicator size="large" color={Colors.main} />
+          ) : !isLoadingStatistics && statisticsData.length === 0 ? (
             <Text style={styles.noDataText}>
               Нет данных за выбранный период
             </Text>
@@ -359,7 +365,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginVertical: 20,
-    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 15,
   },
   dateWrapper: { alignItems: "center", justifyContent: "center", width: "45%" },
   dateButton: {
