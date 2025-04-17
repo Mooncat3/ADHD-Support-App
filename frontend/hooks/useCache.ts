@@ -16,24 +16,29 @@ const useCache = async (
     if (
       state.isConnected &&
       state.isInternetReachable &&
-      (!parsed || Date.now() - parsed.timestamp > CACHE_EXPIRE)
+      (!parsed || new Date().getTime() - parsed.timestamp > CACHE_EXPIRE)
     ) {
-      const data = await apiFunc();
+      try {
+        const data = await apiFunc();
 
-      await SecureStore.setItemAsync(
-        key,
-        JSON.stringify({
-          data,
-          timestamp: Date.now(),
-        })
-      );
+        await SecureStore.setItemAsync(
+          key,
+          JSON.stringify({
+            data,
+            timestamp: new Date().getTime(),
+          })
+        );
 
-      return data;
+        return data;
+      } catch (err) {
+        return parsed?.data || null;
+      }
     }
 
-    if (parsed) return parsed.data;
+    return parsed?.data || null;
   } catch (error) {
     console.log("Error fetching data:", error);
+    return null;
   }
 };
 
