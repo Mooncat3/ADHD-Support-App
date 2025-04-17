@@ -24,9 +24,8 @@ export const useTogglePasswordVisibility = (setVisibility = true) => {
 export const passwordInputStyles = StyleSheet.create({
   iconButton: {
     position: "absolute",
-    right: 10,
-    top: 28,
-    transform: [{ translateY: -15 }],
+    right: 15,
+    top: 13,
   },
   passwordContainer: {
     position: "relative",
