@@ -67,9 +67,6 @@ const TaskScheduleItem: React.FC<TaskScheduleItemProps> = ({
   const isStatisticsMode = !!date && !!time_stat && !!formatTime;
 
   const renderContent = () => {
-    const isTapCountArray = Array.isArray(tap_count);
-    const level = isTapCountArray ? 2 : 1;
-
     if (isStatisticsMode && time_stat && formatTime) {
       return Object.entries(time_stat)
         .filter(([_, stat]) => stat !== undefined)
@@ -110,37 +107,38 @@ const TaskScheduleItem: React.FC<TaskScheduleItemProps> = ({
           </View>
         ));
     }
-
+    const isTapCountArray = Array.isArray(tap_count);
+    const levelTaskInfo = isTapCountArray ? 2 : 1;
     const tapCounts = isTapCountArray ? tap_count : [tap_count];
-
-    return (
-      <>
-        {level === 1 && (
-          <Text style={styles.seriesText}>
-            1-ая серия: {tapCounts[0]} нажатий
-          </Text>
-        )}
-        {level === 2 && (
-          <>
+    if (!isStatisticsMode)
+      return (
+        <>
+          {levelTaskInfo === 1 && (
             <Text style={styles.seriesText}>
               1-ая серия: {tapCounts[0]} нажатий
             </Text>
-            {tapCounts.length > 1 && (
+          )}
+          {levelTaskInfo === 2 && (
+            <>
               <Text style={styles.seriesText}>
-                2-ая серия: {tapCounts[1]} нажатий
+                1-ая серия: {tapCounts[0]} нажатий
               </Text>
-            )}
-          </>
-        )}
-      </>
-    );
+              {tapCounts.length > 1 && (
+                <Text style={styles.seriesText}>
+                  2-ая серия: {tapCounts[1]} нажатий
+                </Text>
+              )}
+            </>
+          )}
+        </>
+      );
   };
 
   const getContentHeight = () => {
     if (isStatisticsMode && time_stat) {
-      return Object.keys(time_stat).length * 100;
+      return Object.keys(time_stat).length * 120;
     }
-    return level === 1 ? 40 : 80;
+    return level === 1 ? 40 : 100;
   };
 
   return (

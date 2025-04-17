@@ -26,6 +26,7 @@ const PatientList: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [isLoading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPressed, setIsPressed] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -69,6 +70,13 @@ const PatientList: React.FC = () => {
     );
   }
 
+  const handlePress = (item: any) => {
+    if (isPressed) return;
+    handlePatientChoose(item);
+    setIsPressed(true);
+    setTimeout(() => setIsPressed(false), 1000);
+  };
+
   return (
     <View style={styles.container}>
       <LoadingModal visible={isLoading} />
@@ -83,7 +91,7 @@ const PatientList: React.FC = () => {
             <TouchableOpacity
               activeOpacity={0.8}
               style={styles.item}
-              onPress={() => handlePatientChoose(item)}
+              onPress={() => handlePress(item)}
             >
               <View style={styles.textContainer}>
                 <Text style={styles.text}>

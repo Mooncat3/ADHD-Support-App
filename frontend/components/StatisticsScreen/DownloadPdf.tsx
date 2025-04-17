@@ -53,7 +53,7 @@ export const handleGetStatistics = async (
   } catch (error: any) {
     if (error.message && error.message.includes("ENOSPC")) {
       showError("Недостаточно места на устройстве");
-    } else if (error.status === "404") {
+    } else if (error.status == "404") {
       showError("У данного пациента нет статистики");
     } else {
       console.log(error);
