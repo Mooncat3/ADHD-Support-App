@@ -122,7 +122,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
             <Pressable
               onPress={handlePasswordVisibility}
               style={passwordInputStyles.iconButton}
-              hitSlop={{ top: 40, bottom: 40, left: 40, right: 40 }}
+              hitSlop={{ top: 10, bottom: 10, right: 20 }}
             >
               <Ionicons name={rightIcon} size={24} color={Colors.secondary} />
             </Pressable>

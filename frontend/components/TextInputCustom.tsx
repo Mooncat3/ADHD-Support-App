@@ -6,7 +6,6 @@ import {
   View,
   Animated,
   Easing,
-  Pressable,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 
@@ -62,7 +61,6 @@ const TextField: React.FC<Props> = (props) => {
           onBlur?.(event);
         }}
         onFocus={(event) => {
-          console.log("focus");
           setIsFocused(true);
           onFocus?.(event);
         }}

@@ -26,6 +26,7 @@ export const passwordInputStyles = StyleSheet.create({
     position: "absolute",
     right: 15,
     top: 13,
+    width: "auto",
   },
   passwordContainer: {
     position: "relative",
