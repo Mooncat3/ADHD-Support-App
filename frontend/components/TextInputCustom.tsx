@@ -43,7 +43,7 @@ const TextField: React.FC<Props> = (props) => {
   }
 
   return (
-    <View>
+    <View style={{ position: "relative" }}>
       <TextInput
         style={[
           styles.input,
@@ -84,8 +84,8 @@ const TextField: React.FC<Props> = (props) => {
               },
               {
                 translateX: focusAnim.interpolate({
-                  inputRange: [0, 0.1],
-                  outputRange: [-9, -15],
+                  inputRange: [0, 1],
+                  outputRange: [-10, -100],
                 }),
               },
             ],
@@ -124,19 +124,13 @@ const styles = StyleSheet.create({
   },
   labelContainer: {
     position: "absolute",
-    paddingLeft: 25,
-    flexDirection: "row",
+    left: 25,
+    minWidth: 520,
     pointerEvents: "none",
-    justifyContent: "flex-start",
-    flex: 1,
-    textAlign: "left",
   },
   label: {
     fontFamily: "Montserrat-Regular",
     fontSize: 16,
-    justifyContent: "flex-start",
-    flex: 1,
-    textAlign: "left",
   },
   error: {
     marginTop: 4,

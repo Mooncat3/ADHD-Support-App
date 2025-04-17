@@ -99,7 +99,7 @@ const DoctorMain: React.FC = () => {
         }
       }
     } catch (error: any) {
-      if (error.status == "400") {
+      if (error.status === "400") {
         setErrMsg("Пользователь с таким логином уже существует");
       } else {
         setErrMsg(
