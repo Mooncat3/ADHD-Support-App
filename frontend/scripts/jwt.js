@@ -5,6 +5,7 @@ const storeTokenInSecureStore = async (key, token) => {
     await SecureStore.setItemAsync(key, token);
   } catch (error) {
     console.log("Ошибка сохранения токенов в SecureStore:", error);
+    throw error;
   }
 };
 
@@ -14,6 +15,7 @@ const getTokenFromSecureStore = async (key) => {
     if (token) return token;
   } catch (error) {
     console.log("Ошибка при получении токена из SecureStore:", error);
+    throw error;
   }
 };
 
@@ -23,6 +25,7 @@ const deleteTokenFromSecureStore = async (key) => {
     if (token) await SecureStore.deleteItemAsync(key);
   } catch (error) {
     console.log("Ошибка при удалении токена из SecureStore:", error);
+    throw error;
   }
 };
 
