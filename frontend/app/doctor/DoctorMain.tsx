@@ -28,7 +28,6 @@ const DoctorMain: React.FC = () => {
   const router = useRouter();
   const [headerUserName, setHeaderUserName] = useState<string>("");
   const [selc, setSelc] = useState<string>("patient_list");
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -60,26 +59,6 @@ const DoctorMain: React.FC = () => {
         setError(checkCode(error.status));
         console.error("Error getting user role:", error);
       });
-  }, []);
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      "keyboardDidShow",
-      () => {
-        setIsKeyboardVisible(true);
-      }
-    );
-    const keyboardDidHideListener = Keyboard.addListener(
-      "keyboardDidHide",
-      () => {
-        setIsKeyboardVisible(false);
-      }
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
   }, []);
 
   const handleFormChange = (data: RegistrationData) => {
@@ -212,23 +191,24 @@ const DoctorMain: React.FC = () => {
       )}
 
       {selc === "patient_registration" && (
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <RegistrationForm
-            onFormChange={handleFormChange}
-            errors={formErrors}
-          />
-          {!isKeyboardVisible && (
-            <Footer
-              components={[
-                <FooterButton
-                  onPress={handleRegister}
-                  label="Зарегистрировать"
-                  key="1"
-                />,
-              ]}
+        <>
+          <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+            <RegistrationForm
+              onFormChange={handleFormChange}
+              errors={formErrors}
             />
-          )}
-        </ScrollView>
+          </ScrollView>
+
+          <Footer
+            components={[
+              <FooterButton
+                onPress={handleRegister}
+                label="Зарегистрировать"
+                key="1"
+              />,
+            ]}
+          />
+        </>
       )}
     </View>
   );
