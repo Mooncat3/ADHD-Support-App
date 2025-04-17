@@ -34,21 +34,23 @@ export const getPatients = async (req, res, next) => {
   }
 };
 
+const capitalize = (string) => {
+  return string
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .map((e) => {
+      return e.charAt(0).toUpperCase() + e.slice(1).toLowerCase();
+    })
+    .join(" ");
+};
+
 export const registerPatient = async (req, res, next) => {
   try {
     const { username, password, email, firstName, secondName, patronymic } =
       req.body;
 
     const doctorId = req.userId;
-
-    const capitalize = (string) => {
-      return string
-        .split(" ")
-        .map((e) => {
-          return e.charAt(0).toUpperCase() + e.slice(1).toLowerCase();
-        })
-        .join(" ");
-    };
 
     const request = await pool.query(
       "SELECT user_register($1, $2, $3, $4, $5, $6, $7);",

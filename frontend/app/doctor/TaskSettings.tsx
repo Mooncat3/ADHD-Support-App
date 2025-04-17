@@ -69,6 +69,7 @@ const TaskSettings = () => {
 
   const handleSave = () => {
     if (level) {
+      setIsLoading(true);
       api
         .putPatientActivity(patientId, {
           level: parseInt(level),
@@ -79,7 +80,10 @@ const TaskSettings = () => {
           selected_time: selectedTimes.sort((a, b) => a - b).map(String),
         })
         .then(() => router.back())
-        .catch(() => setErrMsg("Не удалось сохранить задания"));
+        .catch(() => {
+          setIsLoading(false);
+          setErrMsg("Не удалось сохранить задания");
+        });
     }
   };
 

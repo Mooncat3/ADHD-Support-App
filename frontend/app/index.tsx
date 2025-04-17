@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from "expo-splash-screen";
 import * as Font from "expo-font";
 import { useCheckInternetRole } from "@/hooks/useCheckInternetRole";
+import { Colors } from "@/constants/Colors";
 
 export default function App() {
   const [appIsReady, setAppIsReady] = useState<boolean>(false);
@@ -43,6 +44,7 @@ export default function App() {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: Colors.backgroundScreen,
       }}
     ></View>
   );
