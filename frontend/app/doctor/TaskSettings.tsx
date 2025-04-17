@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import Header from "@/components/Header";
 import TimeSelector from "@/components/TaskSettings/TimeSelector";
 import CounterSection from "@/components/TaskSettings/CounterSection";
@@ -25,6 +25,7 @@ const TaskSettings = () => {
     patientId: string;
   }>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [errMsg, setErrMsg] = useState<string>();
 
   const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
 
@@ -40,7 +41,10 @@ const TaskSettings = () => {
             selected_time: [],
           });
       })
-      .catch((err) => {});
+      .catch(() => {
+        setIsLoading(false);
+        setErrMsg("Не удалось загрузить задания");
+      });
   }, []);
 
   const loadData = (activity: Record<string, any>) => {
@@ -54,7 +58,7 @@ const TaskSettings = () => {
       );
       if (Array.isArray(activity.tap_count))
         setSecondSeriesCount(activity.tap_count[1]);
-    }
+    } else setErrMsg("Не удалось загрузить задания");
     setIsLoading(false);
   };
 
@@ -62,71 +66,88 @@ const TaskSettings = () => {
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const [firstSeriesCount, setFirstSeriesCount] = useState<number>();
   const [secondSeriesCount, setSecondSeriesCount] = useState<number>(1);
-  const [headerUserName, setHeaderUserName] =
-    useState<string>(formattedFirstName);
 
   const handleSave = () => {
     if (level) {
-      api.putPatientActivity(patientId, {
-        level: parseInt(level),
-        tap_count:
-          level === "1"
-            ? firstSeriesCount
-            : [firstSeriesCount, secondSeriesCount],
-        selected_time: selectedTimes.sort((a, b) => a - b).map(String),
-      });
-      router.back();
+      api
+        .putPatientActivity(patientId, {
+          level: parseInt(level),
+          tap_count:
+            level === "1"
+              ? firstSeriesCount
+              : [firstSeriesCount, secondSeriesCount],
+          selected_time: selectedTimes.sort((a, b) => a - b).map(String),
+        })
+        .then(() => router.back())
+        .catch(() => setErrMsg("Не удалось сохранить задания"));
     }
   };
 
   return (
     <View style={styles.container}>
-      <Header title={headerUserName} />
+      <Header title={formattedFirstName} />
       <LoadingModal visible={isLoading} />
 
-      {!isLoading && (
-        <View style={styles.content}>
-          {level && (
-            <Selector
-              selected={level}
-              onSelect={setLevel}
-              mainLabel="Уровень сложности"
-              keys={{ "1": "Простой", "2": "Сложный" }}
-            />
-          )}
-
-          <TimeSelector
-            selectedTimes={selectedTimes}
-            onSelectTime={(time) => {
-              if (selectedTimes.includes(time)) {
-                setSelectedTimes(selectedTimes.filter((t) => t !== time));
-              } else {
-                setSelectedTimes([...selectedTimes, time]);
-              }
-            }}
-          />
-
-          {level && firstSeriesCount !== undefined && (
-            <CounterSection
-              firstSeriesCount={firstSeriesCount}
-              secondSeriesCount={secondSeriesCount}
-              onFirstSeriesChange={setFirstSeriesCount}
-              onSecondSeriesChange={setSecondSeriesCount}
-              level={level}
-            />
-          )}
+      {errMsg && (
+        <View style={styles.message}>
+          <Text style={styles.messageText}>{errMsg}</Text>
         </View>
       )}
-      <Footer
-        components={[
-          <FooterButton onPress={handleSave} label="Сохранить" key="1" />,
-        ]}
-      ></Footer>
+
+      {!isLoading && !errMsg && (
+        <>
+          <View style={styles.content}>
+            {level && (
+              <Selector
+                selected={level}
+                onSelect={setLevel}
+                mainLabel="Уровень сложности"
+                keys={{ "1": "Простой", "2": "Сложный" }}
+              />
+            )}
+
+            <TimeSelector
+              selectedTimes={selectedTimes}
+              onSelectTime={(time) => {
+                if (selectedTimes.includes(time)) {
+                  setSelectedTimes(selectedTimes.filter((t) => t !== time));
+                } else {
+                  setSelectedTimes([...selectedTimes, time]);
+                }
+              }}
+            />
+
+            {level && firstSeriesCount !== undefined && (
+              <CounterSection
+                firstSeriesCount={firstSeriesCount}
+                secondSeriesCount={secondSeriesCount}
+                onFirstSeriesChange={setFirstSeriesCount}
+                onSecondSeriesChange={setSecondSeriesCount}
+                level={level}
+              />
+            )}
+          </View>
+          <Footer
+            components={[
+              <FooterButton onPress={handleSave} label="Сохранить" key="1" />,
+            ]}
+          ></Footer>
+        </>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  message: {
+    paddingTop: 20,
+    alignItems: "center",
+  },
+  messageText: {
+    color: Colors.headerText,
+    fontSize: 18,
+    fontFamily: "Montserrat-SemiBold",
+  },
   container: {
     display: "flex",
     flexDirection: "column",
