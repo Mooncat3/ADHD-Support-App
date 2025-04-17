@@ -1,6 +1,5 @@
 import { deleteTokenFromSecureStore } from "@/scripts/jwt";
 import { Router } from "expo-router";
-
 const useHandleLogout = async (
   router: Router,
   deleteTokens: boolean = true
@@ -14,6 +13,7 @@ const useHandleLogout = async (
 
     await deleteTokenFromSecureStore("role");
     await deleteTokenFromSecureStore("user");
+    await deleteTokenFromSecureStore("daily_tasks");
   }
 };
 

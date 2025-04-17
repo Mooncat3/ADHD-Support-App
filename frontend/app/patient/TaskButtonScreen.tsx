@@ -4,26 +4,30 @@ import { ActionButton } from "@/components/TaskButtonScreen/ActionButton";
 import Header from "@/components/Header";
 import { Colors } from "@/constants/Colors";
 import { useLocalSearchParams } from "expo-router";
-import api from "@/scripts/api";
 import * as SecureStore from "expo-secure-store";
 
 const TASK_CACHE_KEY = "daily_tasks";
-const PENDING_SUBMISSIONS_KEY = "pending_submissions";
 
-// Утилиты для работы с временем
-function getStartOfDayUnix() {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+function getStartOfDayUnix(now: number) {
+  const nowUnix = new Date(now);
+  const startOfDay = new Date(
+    nowUnix.getFullYear(),
+    nowUnix.getMonth(),
+    nowUnix.getDate()
+  );
   return Math.floor(startOfDay.getTime() / 1000);
 }
 
-function getCurrentHour() {
-  return new Date().getHours().toString();
+function getCurrentHour(now: number) {
+  const nowUnix = new Date(now);
+  return nowUnix.getHours().toString();
 }
 
-function getSecondsSinceMidnight() {
-  const now = new Date();
-  return now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+function getSecondsSinceMidnight(now: number) {
+  const nowUnix = new Date(now);
+  return (
+    nowUnix.getHours() * 3600 + nowUnix.getMinutes() * 60 + nowUnix.getSeconds()
+  );
 }
 
 const Block = ({ title, value }: { title: string; value: string }) => (
@@ -39,27 +43,30 @@ export default function ButtonPage() {
     patientId: string;
     selectedTime: string;
   }>();
-  const { level = "", patientId = "", selectedTime = "" } = params;
+  const { level = "" } = params;
   const [status, setStatus] = useState("Не начато");
   const { height } = Dimensions.get("window");
   [
     {
-      date: 1744664400,
+      date: 1744837200,
       level: "2",
-      time_stat: {
-        "16": {
-          timestamp_start: 60675,
-          tap_count: [8],
-        },
-      },
+      time_stat: { "1": { timestamp_start: 6070, tap_count: [1, 0] } },
+    },
+    {
+      date: 1744837200,
+      level: "2",
+      time_stat: { "2": { timestamp_start: 9664, tap_count: [1, 0] } },
     },
   ];
-
-  const [tapState, setTapState] = useState<{
+  interface tapStateData {
+    timestamp_start: number | null;
     firstSeries: { count: number; lastTap: number | null };
     secondSeries: { count: number; lastTap: number | null };
     currentMode: "idle" | "first" | "second";
-  }>({
+  }
+
+  const [tapState, setTapState] = useState<tapStateData>({
+    timestamp_start: null,
     firstSeries: { count: 0, lastTap: null },
     secondSeries: { count: 0, lastTap: null },
     currentMode: "idle",
@@ -74,6 +81,7 @@ export default function ButtonPage() {
         setStatus("Начато");
         return {
           ...prev,
+          timestamp_start: Date.now(),
           currentMode: "first",
           firstSeries: { count: 1, lastTap: now },
         };
@@ -117,9 +125,49 @@ export default function ButtonPage() {
     });
   };
   useEffect(() => {
+    const saveSeries = async (tapState: tapStateData, level: string) => {
+      const now = tapState.timestamp_start;
+      if (now) {
+        const startOfDayUnix = getStartOfDayUnix(now);
+        const currentHour = getCurrentHour(now);
+        const timestampStart = getSecondsSinceMidnight(now);
+        // Получаем текущие данные
+        const existingDataStr = await SecureStore.getItemAsync(TASK_CACHE_KEY);
+        let existingData = existingDataStr ? JSON.parse(existingDataStr) : [];
+
+        // Ищем или создаем запись за сегодня
+        let todayData = existingData.find(
+          (item: any) => item.date === startOfDayUnix
+        );
+        todayData = {
+          date: startOfDayUnix,
+          level: level,
+          time_stat: {},
+        };
+        existingData.push(todayData);
+
+        // Для level 2 формируем массив нажатий
+        const tapData =
+          level === "1"
+            ? tapState.firstSeries.count
+            : [tapState.firstSeries.count, tapState.secondSeries.count];
+
+        // Добавляем данные
+        todayData.time_stat[currentHour] = {
+          timestamp_start: timestampStart,
+          tap_count: tapData,
+        };
+
+        await SecureStore.setItemAsync(
+          TASK_CACHE_KEY,
+          JSON.stringify(existingData)
+        );
+        // await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
+        console.log(JSON.stringify(existingData));
+      }
+    };
     const checkSeries = () => {
       const now = Date.now();
-
       // Завершение первой серии
       if (
         tapState.currentMode === "first" &&
@@ -128,6 +176,7 @@ export default function ButtonPage() {
       ) {
         if (level === "1") {
           setStatus("Завершено");
+          saveSeries(tapState, level);
         }
         console.log(tapState);
         setTapState((prev) => ({
@@ -148,6 +197,7 @@ export default function ButtonPage() {
       ) {
         console.log(tapState);
         setStatus("Завершено");
+        saveSeries(tapState, level);
         setTapState((prev) => ({
           ...prev,
           currentMode: "idle",
@@ -165,7 +215,9 @@ export default function ButtonPage() {
       ) {
         console.log(tapState);
         setStatus("Завершено");
+        saveSeries(tapState, level);
         setTapState({
+          timestamp_start: null,
           firstSeries: { count: 0, lastTap: null },
           secondSeries: { count: 0, lastTap: null },
           currentMode: "idle",

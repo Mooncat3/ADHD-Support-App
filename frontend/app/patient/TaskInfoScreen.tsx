@@ -16,6 +16,8 @@ import { useRouter } from "expo-router";
 import api from "@/scripts/api";
 import useHandleLogout from "@/hooks/useHandleLogout";
 import useCache from "@/hooks/useCache";
+import * as SecureStore from "expo-secure-store";
+import NetInfo from "@react-native-community/netinfo";
 
 type ActivityData = {
   level: number;
@@ -31,7 +33,8 @@ interface User {
   surname: string;
 }
 
-const CACHE_EXPIRE = 12 * 60 * 60 * 1000;
+const CACHE_EXPIRE = 24 * 60 * 60 * 1000;
+const TASK_CACHE_KEY = "daily_tasks";
 
 const TaskInfoScreen: React.FC = () => {
   const router = useRouter();
@@ -77,9 +80,37 @@ const TaskInfoScreen: React.FC = () => {
     setRefreshing(true);
     const userCached = await useCache("user", api.patientData, CACHE_EXPIRE);
     setUser(userCached);
+    processUserData(userCached);
+    sendSeries();
     setRefreshing(false);
   };
+  const sendSeries = async () => {
+    const seriesStr = await SecureStore.getItemAsync(TASK_CACHE_KEY);
+    const state = await NetInfo.fetch();
+    console.log("huh???");
+    console.log(seriesStr);
+    let parsed;
+    if (seriesStr) parsed = JSON.parse(seriesStr);
 
+    if (parsed && Array.isArray(parsed)) {
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      const oneDayInSeconds = 24 * 60 * 60;
+      const seriesCacheExpire = 72 * 60 * 60;
+
+      const hasOldRecords = parsed.some((item) => {
+        if (item.date && typeof item.date === "number") {
+          return currentTimestamp - item.date >= oneDayInSeconds;
+        }
+        return false;
+      });
+      if (state.isConnected && state.isInternetReachable && hasOldRecords) {
+        console.log(seriesStr);
+
+        api.setStatistics(parsed);
+        await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
+      }
+    }
+  };
   useEffect(() => {
     fetchData();
   }, []);
@@ -113,9 +144,7 @@ const TaskInfoScreen: React.FC = () => {
       router.push({
         pathname: "/patient/TaskButtonScreen",
         params: {
-          patientId: user.id,
           level: user.activity.level,
-          selectedTime: user.activity.selected_time,
         },
       });
   };
