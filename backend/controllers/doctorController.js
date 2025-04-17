@@ -41,9 +41,26 @@ export const registerPatient = async (req, res, next) => {
 
     const doctorId = req.userId;
 
+    const capitalize = (string) => {
+      return string
+        .split(" ")
+        .map((e) => {
+          return e.charAt(0).toUpperCase() + e.slice(1).toLowerCase();
+        })
+        .join(" ");
+    };
+
     const request = await pool.query(
       "SELECT user_register($1, $2, $3, $4, $5, $6, $7);",
-      [doctorId, username, password, email, firstName, secondName, patronymic]
+      [
+        doctorId,
+        username,
+        password,
+        email,
+        capitalize(firstName),
+        capitalize(secondName),
+        capitalize(patronymic),
+      ]
     );
 
     const result = request.rows[0].user_register;

@@ -27,7 +27,6 @@ import { checkCode } from "@/components/CheckErrorCode";
 import api from "@/scripts/api";
 import { useRouter } from "expo-router";
 import LoadingModal from "@/components/LoadingModal";
-import * as SecureStore from "expo-secure-store";
 import { getRole } from "@/hooks/useCheckInternetRole";
 
 type AuthorizationData = {
@@ -66,9 +65,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
       setAuthorizationData((prev) => ({ ...prev, [field]: text }));
     }
   };
-  const onClose = () => {
-    setIsLoading(false);
-  };
+
   const handleAuthorize = async () => {
     setIsLoading(true);
     setError("");
@@ -81,7 +78,6 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
     setFormErrors(filteredErrors);
 
     if (Object.keys(filteredErrors).length === 0) {
-      await SecureStore.deleteItemAsync("user");
       api
         .auth(authorizationData)
         .then(async () => {
@@ -89,7 +85,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
           setIsLoading(false);
         })
         .catch((error) => {
-          setError(checkCode(error.status?.toString()));
+          setError(checkCode(error.status));
           setIsLoading(false);
         });
     } else {

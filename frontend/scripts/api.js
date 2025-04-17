@@ -15,6 +15,7 @@ export function setUnauthorizedHandler(handler) {
 const api = axios.create({
   baseURL: process.env.EXPO_PUBLIC_API_URL,
   headers: { "Content-Type": "application/json" },
+  timeout: 2500,
 });
 
 async function refreshToken() {
@@ -46,12 +47,15 @@ api.interceptors.response.use(
         return api.request(error.config);
       } else await unauthorizedHandler();
     } else {
+      const err = new Error();
       if (axios.isAxiosError(error)) {
-        const axErr = new Error(error.message);
-        axErr.status = error.status;
-        throw axErr;
+        err.message = error.message;
+        err.status = error.status?.toString() || null;
+      } else {
+        err.message = "Неизвестная ошибка";
+        err.status = null;
       }
-      throw new Error("Неизвестная ошибка");
+      return Promise.reject(err);
     }
     return Promise.reject(error);
   }
