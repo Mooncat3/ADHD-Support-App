@@ -62,6 +62,7 @@ const LoadingModal: React.FC<LoadingModalProps> = ({
 
 const styles = StyleSheet.create({
   modalOverlay: {
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
