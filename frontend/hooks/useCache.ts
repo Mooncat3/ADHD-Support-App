@@ -12,14 +12,14 @@ const useCache = async (
 
     let parsed;
     if (cached) parsed = JSON.parse(cached);
+
     if (
       state.isConnected &&
       state.isInternetReachable &&
-      ((await apiFunc()) ||
-        !parsed ||
-        Date.now() - parsed.timestamp > CACHE_EXPIRE)
+      (!parsed || Date.now() - parsed.timestamp > CACHE_EXPIRE)
     ) {
       const data = await apiFunc();
+
       await SecureStore.setItemAsync(
         key,
         JSON.stringify({

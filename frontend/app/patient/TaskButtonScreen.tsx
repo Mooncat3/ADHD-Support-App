@@ -46,18 +46,6 @@ export default function ButtonPage() {
   const { level = "" } = params;
   const [status, setStatus] = useState("Не начато");
   const { height } = Dimensions.get("window");
-  [
-    {
-      date: 1744837200,
-      level: "2",
-      time_stat: { "1": { timestamp_start: 6070, tap_count: [1, 0] } },
-    },
-    {
-      date: 1744837200,
-      level: "2",
-      time_stat: { "2": { timestamp_start: 9664, tap_count: [1, 0] } },
-    },
-  ];
   interface tapStateData {
     timestamp_start: number | null;
     firstSeries: { count: number; lastTap: number | null };
