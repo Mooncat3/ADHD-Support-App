@@ -85,7 +85,6 @@ const Selector: React.FC<SelectorProps> = ({
               numberOfLines={1}
               style={[
                 selected === k ? styles.selectedText : styles.unselectedText,
-                styles.selectorText,
               ]}
             >
               {v}
@@ -103,11 +102,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  selectorText: {
-    textAlign: "center",
-    flexShrink: 1,
-    flexWrap: "wrap",
-  },
   label: {
     fontSize: 16,
     color: "#636262",
@@ -119,7 +113,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#EFF1F5",
     borderRadius: 20,
     position: "relative",
-    flexShrink: 1,
   },
   compactOptions: {
     alignSelf: "flex-start",
@@ -131,7 +124,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1,
-    flexShrink: 0,
   },
   cursor: {
     position: "absolute",
