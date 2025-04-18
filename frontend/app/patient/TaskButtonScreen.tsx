@@ -221,7 +221,16 @@ export default function ButtonPage() {
     <View style={styles.container}>
       <Header title="" createBackButton />
       <View style={styles.blocksContainer}>
-        <Block title="Серия" value={tapState.currentMode} />
+        <Block
+          title="Серия"
+          value={
+            tapState.currentMode === "idle"
+              ? "..."
+              : tapState.currentMode === "first"
+              ? "1"
+              : "2"
+          }
+        />
         <Block title="Задание" value={status} />
       </View>
       <View style={[styles.button, { bottom: height * (1 / 6) }]}>

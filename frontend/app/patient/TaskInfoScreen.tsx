@@ -87,8 +87,6 @@ const TaskInfoScreen: React.FC = () => {
   const sendSeries = async () => {
     const seriesStr = await SecureStore.getItemAsync(TASK_CACHE_KEY);
     const state = await NetInfo.fetch();
-    console.log("huh???");
-    console.log(seriesStr);
     let parsed;
     if (seriesStr) parsed = JSON.parse(seriesStr);
 
@@ -195,16 +193,18 @@ const TaskInfoScreen: React.FC = () => {
         ))}
       </ScrollView>
 
-      <Footer
-        components={[
-          <FooterButton
-            key="1"
-            onPress={handleStartTask}
-            label="К заданию"
-            secondary={true}
-          />,
-        ]}
-      />
+      {user?.activity && (
+        <Footer
+          components={[
+            <FooterButton
+              key="1"
+              onPress={handleStartTask}
+              label="К заданию"
+              secondary={true}
+            />,
+          ]}
+        />
+      )}
       <ModalWindow
         visible={showConfirm}
         type="confirmation"

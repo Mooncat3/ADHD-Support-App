@@ -27,7 +27,6 @@ import { checkCode } from "@/components/CheckErrorCode";
 import api from "@/scripts/api";
 import { useRouter } from "expo-router";
 import LoadingModal from "@/components/LoadingModal";
-import * as SecureStore from "expo-secure-store";
 import { getRole } from "@/hooks/useCheckInternetRole";
 
 type AuthorizationData = {
@@ -48,7 +47,6 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [error, setError] = useState<string>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const TASK_CACHE_KEY = "daily_tasks";
   const [authorizationData, setAuthorizationData] = useState<AuthorizationData>(
     {
       username: "",
@@ -67,9 +65,6 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
       setAuthorizationData((prev) => ({ ...prev, [field]: text }));
     }
   };
-  const onClose = () => {
-    setIsLoading(false);
-  };
   const handleAuthorize = async () => {
     setIsLoading(true);
     setError("");
@@ -82,8 +77,6 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
     setFormErrors(filteredErrors);
 
     if (Object.keys(filteredErrors).length === 0) {
-      await SecureStore.deleteItemAsync("user");
-      await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
       api
         .auth(authorizationData)
         .then(async () => {
