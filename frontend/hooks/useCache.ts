@@ -40,7 +40,6 @@ const useCache = async (
 
     return parsed?.data || null;
   } catch (error) {
-    console.log("Error fetching data:", error);
     return null;
   }
 };
