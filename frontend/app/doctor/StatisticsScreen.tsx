@@ -271,7 +271,7 @@ const StatisticsScreen: React.FC = () => {
           <Text style={styles.label}>Отправить на почту</Text>
           <TextInput
             style={styles.emailInput}
-            placeholder=""
+            placeholder="doctor@mail.ru"
             placeholderTextColor={Colors.headerText}
             value={_email}
             onChangeText={(email) => handleChange(email)}
@@ -424,16 +424,17 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     position: "absolute",
-    top: 170,
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     alignItems: "center",
   },
   modalContent: {
-    elevation: 2,
+    marginTop: "50%",
+    elevation: 10,
     borderRadius: 10,
-    width: 340,
+    width: "60%",
     backgroundColor: Colors.primary,
     padding: 16,
   },

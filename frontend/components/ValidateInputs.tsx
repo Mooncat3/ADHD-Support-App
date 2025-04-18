@@ -1,5 +1,5 @@
 export const filterNameText = (text: string): boolean =>
-  /^[A-Za-zА-Яа-яЁё]*$/.test(text);
+  /^[A-Za-zА-Яа-яЁё\s]*$/.test(text);
 export const filterUsernameText = (text: string): boolean =>
   /^[A-Za-z_0-9]*$/.test(text);
 export const filterPasswordText = (text: string): boolean =>
@@ -39,9 +39,6 @@ export const validateForm = (formData: any, isRegistration: boolean = true) => {
     }
     if (!formData.secondName) {
       errors.secondName = "Фамилия обязательна для заполнения";
-    }
-    if (!formData.patronymic) {
-      errors.patronymic = "Отчество обязательно для заполнения";
     }
   }
 
