@@ -35,20 +35,36 @@ export const getStatistics = async (req, res, next) => {
 export const getStatisticsFile = async (req, res, next) => {
   const { startDate, endDate } = req.body;
   const { patientId } = req.params;
-
   try {
-    const userStatistics = await fetchUserStat(patientId, startDate, endDate);
+    const request_stat = await fetchUserStat(patientId, startDate, endDate);
 
-    if (userStatistics) {
-      const pdf = await createPdfDocument(userStatistics);
+    if (request_stat) {
+      await pool.query(`SET app.user_uuid = '${request_stat[0].user_id}'`);
+      const request_meta = await pool.query(
+        "SELECT firstname, surname, lastname FROM users_pub;"
+      );
 
-      res.writeHead(200, {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": "attachment; filename=statistics.pdf",
-        "Content-Length": Buffer.byteLength(pdf),
-      });
+      if (request_meta) {
+        const meta = {
+          firstname: request_meta.rows[0].firstname,
+          surname: request_meta.rows[0].surname,
+          lastname: request_meta.rows[0].lastname,
+          creationDate: new Date(),
+        };
 
-      res.end(pdf);
+        const userStatistics = {
+          stat_data: request_stat,
+          stat_meta: meta,
+        };
+        const pdf = await createPdfDocument(userStatistics);
+        res.writeHead(200, {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": "attachment; filename=statistics.pdf",
+          "Content-Length": Buffer.byteLength(pdf),
+        });
+
+        res.end(pdf);
+      } else return res.status(404).json({ detail: "Metadata does not exist" });
     } else return res.status(404).json({ detail: "Statistics do not exist" });
   } catch (err) {
     next(err);
