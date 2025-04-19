@@ -1,105 +1,105 @@
-import pool from "../config/db.js";
-import { createPdfDocument } from "../utilities/createPdfDocument.js";
-import { sendEmailWithAttachment } from "../utilities/emailSender.js";
+import PDFDocument from "pdfkit";
 
-const fetchUserStat = async (patientId, startDate, endDate) => {
-  await pool.query(`SET app.user_uuid = '${patientId}'`);
+function formatSecondsToHHMM(seconds) {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
 
-  const request = await pool.query(
-    "SELECT * FROM fetch_user_stat($1, $2, $3);",
-    [patientId, startDate, endDate]
-  );
+  return `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}`;
+}
 
-  const userStatistics = request.rows;
-  if (userStatistics.length > 0) return userStatistics;
-};
+export const createPdfDocument = async (data) => {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
+    doc.registerFont("OpenSans", "utilities/fonts/OpenSans-Regular.ttf");
+    const buffers = [];
+    console.log("DATA");
+    console.log(data);
+    doc.on("data", buffers.push.bind(buffers));
+    doc.on("end", () => resolve(Buffer.concat(buffers)));
 
-export const getStatistics = async (req, res, next) => {
-  const { patientId } = req.params;
-  const { startDate, endDate } = req.query;
-  console.log(patientId, startDate, endDate);
-  try {
-    const userStatistics = await fetchUserStat(patientId, startDate, endDate);
+    const stat_meta = data.stat_meta;
+    const formattedDate = stat_meta.creationDate.toLocaleDateString("ru-RU");
 
-    if (userStatistics) {
-      console.log(userStatistics);
-      return res.status(200).json(userStatistics);
-    } else {
-      return res.status(404).json({ detail: "Statistic does not exist" });
-    }
-  } catch (err) {
-    next(err);
-  }
-};
+    const margin = doc.page.margins.left;
 
-export const getStatisticsFile = async (req, res, next) => {
-  const { startDate, endDate } = req.body;
-  const { patientId } = req.params;
-  try {
-    const request_stat = await fetchUserStat(patientId, startDate, endDate);
+    const fullName = `Пациент: ${stat_meta.firstname} ${stat_meta.surname} ${stat_meta.lastname}`;
 
-    if (request_stat) {
-      await pool.query(`SET app.user_uuid = '${request_stat[0].user_id}'`);
-      const request_meta = await pool.query(
-        "SELECT firstname, surname, lastname FROM users_pub;"
-      );
+    // ФИО
+    doc
+      .font("OpenSans")
+      .fontSize(14)
+      .fillColor("#000")
+      .text(fullName, margin, 50)
+      .moveDown(0.5);
 
-      if (request_meta) {
-        const meta = {
-          firstname: request_meta.rows[0].firstname,
-          surname: request_meta.rows[0].surname,
-          lastname: request_meta.rows[0].lastname,
-          creationDate: new Date(),
-        };
+    doc.text(`Создано: ${formattedDate}`, 50);
 
-        const userStatistics = {
-          stat_data: request_stat,
-          stat_meta: meta,
-        };
-        const pdf = await createPdfDocument(userStatistics);
-        res.writeHead(200, {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": "attachment; filename=statistics.pdf",
-          "Content-Length": Buffer.byteLength(pdf),
-        });
+    // Название
+    doc
+      .moveDown(1.5)
+      .fontSize(18)
+      .fillColor("#000")
+      .text("Статистика нажатий", { align: "center" })
+      .moveDown(2);
 
-        res.end(pdf);
-      } else return res.status(404).json({ detail: "Metadata does not exist" });
-    } else return res.status(404).json({ detail: "Statistics do not exist" });
-  } catch (err) {
-    next(err);
-  }
-};
+    data.stat_data.forEach((item) => {
+      // Дата статистики
+      doc
+        .font("OpenSans")
+        .fontSize(14)
+        .fillColor("#2c3e50")
+        .text(`Дата: ${item.date.toLocaleDateString("ru-RU")}`)
+        .moveDown(0.5);
 
-export const sendFileEmail = async (req, res, next) => {
-  const { startDate, endDate, email, fullName } = req.body;
-  const { patientId } = req.params;
+      const bullet = "•";
 
-  try {
-    const userStatistics = await fetchUserStat(patientId, startDate, endDate);
+      for (const key in item.data.time_stat) {
+        const stat = item.data.time_stat[key];
 
-    if (userStatistics) {
-      const pdf = await createPdfDocument(userStatistics);
-      try {
-        const filename = `Отчёт ${fullName} за ${startDate} - ${endDate}.pdf`;
-        await sendEmailWithAttachment({
-          to: email,
-          subject: `Отчёт ${fullName} за ${startDate} - ${endDate}`,
-          text: "",
-          attachment: {
-            filename: filename.replace(" ", "_"),
-            content: pdf,
-          },
-        });
-      } catch (err) {
-        return res.status(450).json({ detail: "Statistics do not send" });
+        // Время начала выполнения
+        doc
+          .font("OpenSans")
+          .fontSize(12)
+          .fillColor("#333")
+          .text(
+            `Время начала выполнения: ${formatSecondsToHHMM(
+              stat.timestamp_start
+            )}`
+          )
+          .moveDown(0.5);
+
+        // Второй уровен вложенности  — данные
+        doc.font("OpenSans").fontSize(12).fillColor("#333");
+
+        const count_info =
+          stat.tap_count.length > 1
+            ? `Количество нажатий (первая|вторая серия): ${stat.tap_count[0]}|${stat.tap_count[1]}`
+            : `Количество нажатий: ${stat.tap_count}`;
+
+        doc.text(`${bullet} ${count_info}`);
+
+        doc.text(`${bullet} Правильность выполнения: `, { continued: true });
+
+        doc
+          .fillColor(stat.success ? "green" : "red")
+          .text(stat.success ? "правильно" : "неправильно");
+
+        doc
+          .fillColor("#333")
+          .text(`${bullet} Вовремя нажатие: `, { continued: true });
+
+        doc
+          .fillColor(stat.in_time ? "green" : "red")
+          .text(stat.in_time ? "вовремя" : "не вовремя");
+        doc.moveDown(1);
       }
-      return res.status(200).json({
-        status: "success",
-        message: "Statistics successfully sent to email",
-      });
-    } else return res.status(404).json({ detail: "Statistics do not exist" });
-  } catch (err) {
-    next(err);
-  }
+
+      doc.moveTo(50, doc.y).lineTo(550, doc.y).strokeColor("#ccc").stroke();
+      doc.moveDown(1.5);
+    });
+
+    doc.end();
+  });
 };
