@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
           </TouchableOpacity>
         </View>
 
-        <Text numberOfLines={2} style={styles.title}>
+        <Text numberOfLines={1} style={styles.title}>
           {title}
         </Text>
         <View style={styles.icon}>
