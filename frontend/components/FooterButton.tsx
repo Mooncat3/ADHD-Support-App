@@ -1,18 +1,21 @@
 import { Colors } from "@/constants/Colors";
 import React from "react";
-import { Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, TouchableOpacity, StyleSheet, View } from "react-native";
 import Debounce from "@/components/Debounce";
+import { AntDesign } from "@expo/vector-icons";
 
 interface FooterButtonProps {
   onPress: () => void;
   label: string;
   secondary?: boolean;
+  iconName?: any;
 }
 
 const FooterButton: React.FC<FooterButtonProps> = ({
   onPress,
   label,
   secondary = false,
+  iconName = null,
 }) => {
   return (
     <Debounce onPress={onPress}>
@@ -23,9 +26,19 @@ const FooterButton: React.FC<FooterButtonProps> = ({
           onPress={handlePress}
           disabled={isPressed}
         >
-          <Text style={styles.buttonText} numberOfLines={1}>
-            {label}
-          </Text>
+          <View style={{ flexDirection: "row" }}>
+            {iconName && (
+              <AntDesign
+                style={{ marginRight: 8 }}
+                size={24}
+                color={Colors.primary}
+                name={iconName}
+              />
+            )}
+            <Text style={styles.buttonText} numberOfLines={1}>
+              {label}
+            </Text>
+          </View>
         </TouchableOpacity>
       )}
     </Debounce>
@@ -49,7 +62,6 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     fontSize: 16,
     fontFamily: "Montserrat-SemiBold",
-    width: "100%",
     textAlign: "center",
   },
 });
