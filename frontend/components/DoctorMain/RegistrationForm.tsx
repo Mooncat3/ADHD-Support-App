@@ -29,6 +29,7 @@ interface RegistrationData {
   patronymic: string;
   username: string;
   password: string;
+  passwordRepeat: string;
   email: string;
 }
 
@@ -50,11 +51,20 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
     patronymic: "",
     username: "",
     password: "",
+    passwordRepeat: "",
     email: "",
   });
 
-  const { passwordVisibility, rightIcon, handlePasswordVisibility } =
-    useTogglePasswordVisibility();
+  const {
+    passwordVisibility: passwordVisibility1,
+    rightIcon: rightIcon1,
+    handlePasswordVisibility: handlePasswordVisibility1,
+  } = useTogglePasswordVisibility(false);
+  const {
+    passwordVisibility: passwordVisibility2,
+    rightIcon: rightIcon2,
+    handlePasswordVisibility: handlePasswordVisibility2,
+  } = useTogglePasswordVisibility(false);
 
   useEffect(() => {
     onFormChange(fields);
@@ -66,10 +76,25 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
     patronymic: filterNameText,
     username: filterUsernameText,
     password: filterPasswordText,
+    passwordRepeat: filterPasswordText,
     email: filterEmailText,
   };
 
   const handleChange = (field: keyof RegistrationData) => (text: string) => {
+    const updatedFields = { ...fields, [field]: text };
+
+    if (
+      (field === "password" || field === "passwordRepeat") &&
+      updatedFields.password &&
+      updatedFields.passwordRepeat
+    ) {
+      if (updatedFields.password !== updatedFields.passwordRepeat) {
+        errors.passwordRepeat = "Пароли не совпадают";
+      } else {
+        delete errors.passwordRepeat;
+      }
+    }
+
     const validate = validationMap[field];
     if (validate(text)) {
       setFields((prev) => ({ ...prev, [field]: text }));
@@ -79,13 +104,18 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
   const renderInput = (
     field: keyof RegistrationData,
     placeholder: string,
-    validate: (text: string) => boolean,
-    secureTextEntry: boolean = false
+    validate: (text: string) => boolean
   ) => {
     const isPasswordField = field === "password";
+    const isPasswordRepField = field === "passwordRepeat";
     const showTooltip = focusedInput === field;
     const tooltipText = getFieldTooltip(field);
 
+    const visibility = isPasswordField
+      ? passwordVisibility1
+      : isPasswordRepField
+      ? passwordVisibility2
+      : true;
     return (
       <View style={styles.inputContainer}>
         <TextField
@@ -93,16 +123,25 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
           value={fields[field]}
           onChangeText={handleChange(field)}
           onFocus={() => setFocusedInput(field)}
-          secureTextEntry={isPasswordField ? passwordVisibility : false}
+          secureTextEntry={!visibility}
           errorText={errors[field] || null}
         />
         {isPasswordField && (
           <Pressable
-            onPress={handlePasswordVisibility}
+            onPress={handlePasswordVisibility1}
             style={passwordInputStyles.iconButton}
-            hitSlop={{ top: 40, bottom: 40, left: 40, right: 40 }}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
           >
-            <Ionicons name={rightIcon} size={24} color={Colors.secondary} />
+            <Ionicons name={rightIcon1} size={24} color={Colors.secondary} />
+          </Pressable>
+        )}
+        {isPasswordRepField && (
+          <Pressable
+            onPress={handlePasswordVisibility2}
+            style={passwordInputStyles.iconButton}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Ionicons name={rightIcon2} size={24} color={Colors.secondary} />
           </Pressable>
         )}
         {showTooltip && tooltipText && (
@@ -114,17 +153,18 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
 
   return (
     <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        style={styles.container}
-      >
-        <ScrollView>
-          {renderInput("firstName", "Имя", filterNameText)}
-          {renderInput("secondName", "Фамилия", filterNameText)}
-          {renderInput("patronymic", "Отчество", filterNameText)}
-          {renderInput("username", "Логин", filterUsernameText)}
-          {renderInput("password", "Пароль", filterPasswordText, true)}
-          {renderInput("email", "Email", filterEmailText)}
-        </ScrollView>
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={styles.container}
+    >
+      <ScrollView>
+        {renderInput("firstName", "Имя", filterNameText)}
+        {renderInput("secondName", "Фамилия", filterNameText)}
+        {renderInput("patronymic", "Отчество", filterNameText)}
+        {renderInput("username", "Логин", filterUsernameText)}
+        {renderInput("password", "Пароль", filterPasswordText)}
+        {renderInput("passwordRepeat", "Повторите пароль", filterPasswordText)}
+        {renderInput("email", "Email", filterEmailText)}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
