@@ -1,30 +1,30 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
   Text,
   TouchableOpacity,
   ScrollView,
-  TextInput,
-  ToastAndroid,
-  Animated,
   ActivityIndicator,
-  TouchableWithoutFeedback,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
 import { Colors } from "@/constants/Colors";
-import { AntDesign, Feather, FontAwesome } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 import ModalWindow from "@/components/ModalWindow";
 import { validateEmail } from "@/components/ValidateInputs";
 import { filterEmailText } from "@/components/ValidateInputs";
 import TaskScheduleItem from "@/components/TaskInfoScreen/TaskScheduleItem";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { handleGetStatistics } from "@/components/StatisticsScreen/DownloadPdf";
 import { handleSendStatistics } from "@/components/StatisticsScreen/SendEmailPdf";
 import "@/components/StatisticsScreen/SetLocaleDate";
 import api from "@/scripts/api";
 import LoadingModal from "@/components/LoadingModal";
+import Footer from "@/components/Footer";
+import FooterButton from "@/components/FooterButton";
+import TextField from "@/components/TextInputCustom";
+import { Pressable } from "react-native";
 
 interface TimeStatistics {
   timestamp_start: number;
@@ -148,9 +148,7 @@ const StatisticsScreen: React.FC = () => {
       setModalMessage(`Отправлено на почту ${_email}`);
       setModalType("information");
     } catch (err) {
-      setTimeout(() => {
-        setModalVisible(false);
-      }, 2000);
+      setModalVisible(false);
     }
     setIsLoading(false);
   };
@@ -266,35 +264,44 @@ const StatisticsScreen: React.FC = () => {
           )}
         </ScrollView>
       </View>
-      <View style={styles.footer}>
-        <View style={styles.emailContainer}>
-          <Text style={styles.label}>Отправить на почту</Text>
-          <TextInput
-            style={styles.emailInput}
-            placeholder="doctor@mail.ru"
-            placeholderTextColor={Colors.headerText}
-            value={_email}
-            onChangeText={(email) => handleChange(email)}
-          />
-          <TouchableOpacity
-            style={styles.sendButton}
-            onPress={() => handleSendPress()}
-          >
-            <Feather name="send" size={18} color={Colors.primary} />
-          </TouchableOpacity>
-        </View>
-        {emailError && <Text style={styles.errorText}>{emailError}</Text>}
 
-        <TouchableOpacity
-          style={styles.downloadButton}
-          onPress={() =>
-            handleGetStatistics(patientId, dates, formattedFirstName)
-          }
-        >
-          <Text style={styles.downloadText}>Скачать статистику</Text>
-          <AntDesign name="download" size={20} color={Colors.primary} />
-        </TouchableOpacity>
-      </View>
+      <Footer
+        components={[
+          <View
+            style={{
+              flexDirection: "row",
+              width: "100%",
+            }}
+            key="1"
+          >
+            <TextField
+              style={styles.emailInput}
+              placeholderTextColor={Colors.headerText}
+              value={_email}
+              onChangeText={(email) => handleChange(email)}
+              label="Email"
+            />
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.sendButton}
+              onPress={() => handleSendPress()}
+            >
+              <Feather name="send" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>,
+          <View key="2">
+            {emailError && <Text style={styles.errorText}>{emailError}</Text>}
+          </View>,
+          <FooterButton
+            key="3"
+            label="Скачать статистику"
+            iconName="download"
+            onPress={() =>
+              handleGetStatistics(patientId, dates, formattedFirstName)
+            }
+          />,
+        ]}
+      />
 
       <ModalWindow
         visible={modalVisible}
@@ -309,45 +316,45 @@ const StatisticsScreen: React.FC = () => {
       />
 
       {showCalendar && (
-        <TouchableWithoutFeedback
+        <Pressable
+          style={styles.modalOverlay}
           onPress={() => {
             setTempDates(dates);
             setShowCalendar(null);
           }}
         >
-          <View style={styles.modalOverlay}>
-            <Animated.View style={[styles.modalContent]}>
-              <Calendar
-                key={showCalendar}
-                markingType={"period"}
-                current={showCalendar === "start" ? dates.start : dates.end}
-                onDayPress={(day: { dateString: string }) =>
-                  handleDateSelect(day.dateString, showCalendar)
-                }
-                markedDates={getMarkedDates(tempDates)}
-                minDate={showCalendar === "end" ? dates.start : undefined}
-                maxDate={showCalendar === "start" ? dates.end : undefined}
-                theme={{
-                  calendarBackground: Colors.primary,
-                  selectedDayBackgroundColor: Colors.main,
-                  selectedDayTextColor: Colors.primary,
-                  todayTextColor: Colors.main,
-                  dayTextColor: Colors.headerText,
-                  arrowColor: Colors.main,
-                }}
-              />
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => {
-                  setDates(tempDates);
-                  setShowCalendar(null);
-                }}
-              >
-                <Text style={styles.closeButtonText}>OK</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </View>
-        </TouchableWithoutFeedback>
+          <Pressable onPress={() => {}} style={[styles.modalContent]}>
+            <Calendar
+              key={showCalendar}
+              markingType={"period"}
+              current={showCalendar === "start" ? dates.start : dates.end}
+              onDayPress={(day: { dateString: string }) =>
+                handleDateSelect(day.dateString, showCalendar)
+              }
+              markedDates={getMarkedDates(tempDates)}
+              minDate={showCalendar === "end" ? dates.start : undefined}
+              maxDate={showCalendar === "start" ? dates.end : undefined}
+              theme={{
+                calendarBackground: Colors.primary,
+                selectedDayBackgroundColor: Colors.main,
+                selectedDayTextColor: Colors.primary,
+                todayTextColor: Colors.main,
+                dayTextColor: Colors.headerText,
+                arrowColor: Colors.main,
+              }}
+            />
+            <TouchableOpacity
+              activeOpacity={0.9}
+              style={styles.closeButton}
+              onPress={() => {
+                setDates(tempDates);
+                setShowCalendar(null);
+              }}
+            >
+              <Text style={styles.closeButtonText}>OK</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
       )}
     </View>
   );
@@ -415,7 +422,6 @@ const styles = StyleSheet.create({
     color: Colors.headerText,
     marginRight: 10,
   },
-  icon: { marginRight: 10 },
   seriesText: {
     fontSize: 16,
     fontFamily: "Montserrat-Regular",
@@ -424,19 +430,17 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    width: "100%",
+    height: "100%",
     alignItems: "center",
   },
   modalContent: {
-    marginTop: "50%",
     elevation: 10,
     borderRadius: 10,
-    width: "60%",
+    width: "80%",
     backgroundColor: Colors.primary,
     padding: 16,
+    marginVertical: "auto",
   },
   closeButton: {
     marginTop: 16,
@@ -445,64 +449,18 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
-  footer: {
-    boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.2)",
-    padding: 16,
-    backgroundColor: Colors.primary,
-    borderTopColor: Colors.secondary,
-    flexDirection: "column",
-    alignItems: "stretch",
-  },
-  emailContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: Colors.secondary,
-    borderRadius: 8,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    backgroundColor: Colors.primary,
-    position: "relative",
-  },
-  label: {
-    position: "absolute",
-    top: -9,
-    left: 10,
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 4,
-    fontSize: 11,
-    color: Colors.secondary,
-  },
   emailInput: {
-    flex: 1,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    marginRight: 6,
     color: Colors.headerText,
+    marginRight: 5,
+    flex: 1,
   },
   sendButton: {
     padding: 8,
     backgroundColor: Colors.main,
-    borderRadius: 8,
+    borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
-  },
-  downloadButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    backgroundColor: Colors.main,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  downloadText: {
-    color: Colors.primary,
-    fontSize: 16,
-    marginRight: 8,
-    fontWeight: "500",
+    width: 80,
   },
   closeButtonText: { color: Colors.primary, fontSize: 16 },
   noDataContainer: {
@@ -517,7 +475,7 @@ const styles = StyleSheet.create({
     color: Colors.headerText,
     fontFamily: "Montserrat-SemiBold",
   },
-  errorText: { marginTop: 4, marginLeft: 5, color: "red" },
+  errorText: { marginLeft: 5, color: "red" },
 });
 
 export default StatisticsScreen;

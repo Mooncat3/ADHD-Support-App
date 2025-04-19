@@ -1,12 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  Text,
-  TextInput,
-  StyleSheet,
-  View,
-  Animated,
-  Easing,
-} from "react-native";
+import { Text, TextInput, StyleSheet, Animated, Easing } from "react-native";
 import { Colors } from "@/constants/Colors";
 
 type Props = React.ComponentProps<typeof TextInput> & {
@@ -43,7 +36,7 @@ const TextField: React.FC<Props> = (props) => {
   }
 
   return (
-    <View style={{ position: "relative" }}>
+    <>
       <TextInput
         style={[
           styles.input,
@@ -106,7 +99,7 @@ const TextField: React.FC<Props> = (props) => {
         </Text>
       </Animated.View>
       {!!errorText && <Text style={styles.error}>{errorText}</Text>}
-    </View>
+    </>
   );
 };
 

@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
     color: Colors.headerText,
+    textAlign: "center",
   },
   buttonsContainer: {
     flexDirection: "row",
