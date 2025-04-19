@@ -51,8 +51,15 @@ const StatisticsScreen: React.FC = () => {
     patientId: string;
   }>();
 
-  function formatDate(date: string): string {
-    return date.split("-").reverse().join(".");
+  function formatStatDate(date: string): string {
+    const utcDate = new Date(date);
+    console.log(utcDate, "utcDate");
+    const timezoneOffsetMinutes = utcDate.getTimezoneOffset();
+    const localDate = new Date(
+      utcDate.getTime() - timezoneOffsetMinutes * 60000
+    );
+    console.log(timezoneOffsetMinutes);
+    return localDate.toLocaleDateString();
   }
 
   const dateNow = new Date();
@@ -92,6 +99,7 @@ const StatisticsScreen: React.FC = () => {
 
   useEffect(() => {
     setIsLoadingStatistics(true);
+    setStatisticsData([]);
     api
       .doctorData()
       .then((user) => {
@@ -128,7 +136,9 @@ const StatisticsScreen: React.FC = () => {
       .padStart(2, "0");
     return `${hours}:${minutes}`;
   };
-
+  function formatDate(date: string): string {
+    return date.split("-").reverse().join(".");
+  }
   const handleSendPress = () => {
     if (!validateEmail(_email)) {
       setEmailError("Некорректно введен email");
@@ -235,13 +245,12 @@ const StatisticsScreen: React.FC = () => {
             </Text>
           ) : (
             statisticsData.map(({ date, data }) => {
-              date = formatDate(date.slice(0, 10));
+              date = formatStatDate(date);
               const timeStat = data?.time_stat ?? {};
               const firstKey = Object.keys(timeStat)[0];
               const tapCount = firstKey
                 ? timeStat[firstKey]?.tap_count
                 : undefined;
-              console.log("tap", tapCount);
               return (
                 <TaskScheduleItem
                   key={date}
