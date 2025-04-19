@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
-import arraysEqual from "../utilities/arrayEquals.js"
+import arraysEqual from "../utilities/arrayEquals.js";
+import { fetchUserStat } from "./statisticController.js";
 
 export const get = async (req, res, next) => {
   try {

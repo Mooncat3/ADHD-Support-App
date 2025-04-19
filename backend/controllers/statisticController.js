@@ -2,7 +2,7 @@ import pool from "../config/db.js";
 import { createPdfDocument } from "../utilities/createPdfDocument.js";
 import { sendEmailWithAttachment } from "../utilities/emailSender.js";
 
-const fetchUserStat = async (patientId, startDate, endDate) => {
+export const fetchUserStat = async (patientId, startDate, endDate) => {
   await pool.query(`SET app.user_uuid = '${patientId}'`);
 
   const request = await pool.query(
