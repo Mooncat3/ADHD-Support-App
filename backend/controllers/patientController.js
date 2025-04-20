@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import arraysEqual from "../utilities/arrayEquals.js"
+import { fetchUserStat } from "./statisticController.js"
 
 export const get = async (req, res, next) => {
   try {
@@ -50,8 +51,9 @@ export const setAllStatistic = async (req, res) => {
           let success = false;
 
           if (in_time) {
-            if (activity.level === 1)
-              success = Object.values(elem.time_stat)[0].tap_count === activity.tap_count;
+            if (activity.level === 1) {
+              success = arraysEqual(Object.values(elem.time_stat)[0].tap_count, [activity.tap_count]);
+            }
             else
               success = (activity.selected_time.indexOf(hours) + 1) % 2 !== 0 ? 
               arraysEqual(Object.values(elem.time_stat)[0].tap_count, activity.tap_count) : 
@@ -61,17 +63,13 @@ export const setAllStatistic = async (req, res) => {
           if (elem.date !== current_date) {
             if (i !== 0) {
               console.log(stats);
-              try {
-                const userStatistics = await fetchUserStat(patientId, elem.date, elem.date);
-                if (!userStatistics) {
-                  await pool.query(query, [
-                    patientId,
-                    new Date(current_date * 1000),
-                    JSON.stringify(stats),
-                  ]);
-                }
-              } catch (err) {
-                next(err);
+              const curDate = new Date(elem.date * 1000).toISOString();
+              if (checkDateStatisticExist(curDate, patientId)) {
+                await pool.query(query, [
+                  patientId,
+                  new Date(current_date * 1000).toISOString(),
+                  JSON.stringify(stats),
+                ]);
               }
               stats = {
                 time_stat: {}
@@ -89,23 +87,32 @@ export const setAllStatistic = async (req, res) => {
 
           if (i === data.length - 1) {
             console.log(stats);
-            try {
-              const userStatistics = await fetchUserStat(patientId, elem.date, elem.date);
-              if (!userStatistics) {
-                await pool.query(query, [
-                  patientId,
-                  new Date(current_date * 1000),
-                  JSON.stringify(stats),
-                ]);
-              }
-            } catch (err) {
-              next(err);
+            const curDate = new Date(elem.date * 1000).toISOString();
+            if (checkDateStatisticExist(curDate, patientId)) {
+              await pool.query(query, [
+                patientId,
+                new Date(current_date * 1000).toISOString(),
+                JSON.stringify(stats),
+              ]);
             }
           }
         }
       });
   }
+  return res.status(200).json({
+    status: "success",
+    message: "Statistics successfully sent to db",
+  });
   } catch (err) {
     res.status(500).json({ detail: `Server error: ${err.message}` });
   }
 };
+
+const checkDateStatisticExist = async (curDate, patientId) => {
+  try {
+    const userStatistics = await fetchUserStat(patientId, curDate, curDate);
+    return !userStatistics; 
+  } catch (err) {
+    return false
+  }
+}
