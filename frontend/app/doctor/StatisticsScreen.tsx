@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
@@ -24,7 +25,6 @@ import LoadingModal from "@/components/LoadingModal";
 import Footer from "@/components/Footer";
 import FooterButton from "@/components/FooterButton";
 import TextField from "@/components/TextInputCustom";
-import { Pressable } from "react-native";
 
 interface TimeStatistics {
   timestamp_start: number;
@@ -51,29 +51,6 @@ const StatisticsScreen: React.FC = () => {
     patientId: string;
   }>();
 
-  const formatStatDate = (date: string): string => {
-    const datesuka = new Date(date);
-    return new Date(
-      datesuka.getTime() - datesuka.getTimezoneOffset() * 60000
-    ).toISOString();
-  };
-
-  const dateNow = new Date();
-  const startDate = new Date(dateNow);
-  console.log(startDate);
-  startDate.setMonth(dateNow.getMonth() - 1);
-
-  const dateToUTC = (dateString: string) => {
-    const date = new Date(dateString);
-    const utcDate = new Date(date.getTime() - 180 * 60000);
-    console.log(date.toISOString(), date.getTimezoneOffset());
-    return utcDate.toISOString();
-  };
-  const [dates, setDates] = useState({
-    start: dateToUTC(startDate.toISOString().split("T")[0]),
-    end: dateToUTC(dateNow.toISOString().split("T")[0]),
-  });
-
   const {
     firstname = "",
     surname = "",
@@ -99,6 +76,41 @@ const StatisticsScreen: React.FC = () => {
   const [isLoadingStatistics, setIsLoadingStatistics] =
     useState<boolean>(false);
 
+  const delTime = (date: Date): string => {
+    return date.toISOString().split("T")[0];
+  };
+
+  const formatDate = (date: string): string => {
+    return date.split("-").reverse().join(".");
+  };
+
+  const formatStatDate = (date: string): string => {
+    const currentDate = new Date(date);
+    return formatDate(delTime(new Date(currentDate.getTime() + 180 * 60000)));
+  };
+
+  const dateToUTC = (dateString: string) => {
+    const date = new Date(dateString);
+    const utcDate = new Date(date.getTime() - 180 * 60000);
+    return utcDate.toISOString();
+  };
+
+  const dateNow = new Date();
+  const startDate = new Date(dateNow);
+  startDate.setMonth(dateNow.getMonth() - 1);
+
+  const [dates, setDates] = useState<Record<"start" | "end", string>>({
+    start: delTime(startDate),
+    end: delTime(dateNow),
+  });
+
+  const [datesInner, setDatesInner] = useState<Record<"start" | "end", string>>(
+    {
+      start: dateToUTC(delTime(startDate)),
+      end: dateToUTC(delTime(dateNow)),
+    }
+  );
+
   useEffect(() => {
     setIsLoadingStatistics(true);
     setStatisticsData([]);
@@ -106,23 +118,35 @@ const StatisticsScreen: React.FC = () => {
       .doctorData()
       .then((user) => {
         setEmail(user.email);
-        return api.getStatistics(patientId, dates.start, dates.end);
+        return api.getStatistics(patientId, datesInner.start, datesInner.end);
       })
       .then((statisticsResponse) => {
         setStatisticsData(statisticsResponse);
         setIsLoadingStatistics(false);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch(() => {
         setIsLoadingStatistics(false);
       });
-  }, [dates]);
+  }, [datesInner]);
 
   const handleDateSelect = (selectedDate: string, type: "start" | "end") => {
     setDates((prev) => ({
       ...prev,
+      [type]: selectedDate,
+    }));
+
+    setDatesInner((prev) => ({
+      ...prev,
       [type]: dateToUTC(selectedDate),
     }));
+  };
+
+  const formatTime = (date: string, timestamp: number) => {
+    const currentDate = new Date(date);
+    const changedDate = new Date(currentDate.getTime() + timestamp * 1000);
+    const hours = changedDate.getHours();
+    const minutes = changedDate.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
   };
 
   const handleChange = (email: string) => {
@@ -131,16 +155,6 @@ const StatisticsScreen: React.FC = () => {
     }
   };
 
-  const formatTime = (timestamp: number) => {
-    const hours = Math.floor(timestamp / 3600).toString();
-    const minutes = Math.floor((timestamp % 3600) / 60)
-      .toString()
-      .padStart(2, "0");
-    return `${hours}:${minutes}`;
-  };
-  const formatDate = (date: string): string => {
-    return date.split("-").reverse().join(".");
-  };
   const handleSendPress = () => {
     if (!validateEmail(_email)) {
       setEmailError("Некорректно введен email");
@@ -156,7 +170,12 @@ const StatisticsScreen: React.FC = () => {
   const handleConfirmSend = async () => {
     try {
       setIsLoading(true);
-      await handleSendStatistics(patientId, dates, _email, formattedFirstName);
+      await handleSendStatistics(
+        patientId,
+        datesInner,
+        _email,
+        formattedFirstName
+      );
       setModalMessage(`Отправлено на почту ${_email}`);
       setModalType("information");
     } catch (err) {
@@ -179,10 +198,10 @@ const StatisticsScreen: React.FC = () => {
     const startStr = range.start.split("T")[0];
     const endStr = range.end.split("T")[0];
 
-    let current = new Date(startDate);
+    const current = new Date(startDate);
 
     while (current <= endDate) {
-      const dateStr = current.toISOString().split("T")[0];
+      const dateStr = delTime(current);
 
       if (dateStr === startStr) {
         markedDates[dateStr] = {
@@ -221,7 +240,7 @@ const StatisticsScreen: React.FC = () => {
               style={styles.dateButton}
               onPress={() => setShowCalendar("start")}
             >
-              <Text style={styles.dateValue}>{dates.start}</Text>
+              <Text style={styles.dateValue}>{formatDate(dates.start)}</Text>
               <AntDesign name="calendar" size={20} color={Colors.headerText} />
             </TouchableOpacity>
           </View>
@@ -232,7 +251,7 @@ const StatisticsScreen: React.FC = () => {
               style={styles.dateButton}
               onPress={() => setShowCalendar("end")}
             >
-              <Text style={styles.dateValue}>{dates.end}</Text>
+              <Text style={styles.dateValue}>{formatDate(dates.end)}</Text>
               <AntDesign name="calendar" size={20} color={Colors.headerText} />
             </TouchableOpacity>
           </View>
@@ -246,8 +265,8 @@ const StatisticsScreen: React.FC = () => {
               Нет данных за выбранный период
             </Text>
           ) : (
-            statisticsData.map(({ date, data }) => {
-              date = formatStatDate(date);
+            statisticsData.map(({ date: unformattedDate, data }) => {
+              const date = formatStatDate(unformattedDate);
               const timeStat = data?.time_stat ?? {};
               const firstKey = Object.keys(timeStat)[0];
               const tapCount = firstKey
@@ -268,7 +287,9 @@ const StatisticsScreen: React.FC = () => {
                   date={date}
                   level={Array.isArray(tapCount) ? 2 : undefined}
                   time_stat={timeStat}
-                  formatTime={formatTime}
+                  formatTime={(timestamp: number) =>
+                    formatTime(unformattedDate, timestamp)
+                  }
                 />
               );
             })
@@ -308,7 +329,7 @@ const StatisticsScreen: React.FC = () => {
             label="Скачать статистику"
             iconName="download"
             onPress={() =>
-              handleGetStatistics(patientId, dates, formattedFirstName)
+              handleGetStatistics(patientId, datesInner, formattedFirstName)
             }
           />,
         ]}
@@ -337,21 +358,13 @@ const StatisticsScreen: React.FC = () => {
             <Calendar
               key={showCalendar}
               markingType={"period"}
-              current={
-                showCalendar === "start"
-                  ? dateToUTC(dates.start)
-                  : dateToUTC(dates.end)
-              }
+              current={showCalendar === "start" ? dates.start : dates.end}
               onDayPress={(day: { dateString: string }) => {
                 handleDateSelect(day.dateString, showCalendar);
               }}
               markedDates={getMarkedDates(dates)}
-              minDate={
-                showCalendar === "end" ? dateToUTC(dates.start) : undefined
-              }
-              maxDate={
-                showCalendar === "start" ? dateToUTC(dates.end) : undefined
-              }
+              minDate={showCalendar === "end" ? dates.start : undefined}
+              maxDate={showCalendar === "start" ? dates.end : undefined}
               theme={{
                 calendarBackground: Colors.primary,
                 selectedDayBackgroundColor: Colors.main,
@@ -415,36 +428,6 @@ const styles = StyleSheet.create({
     fontFamily: "Montserrat-Regular",
   },
   statistics: { flex: 1 },
-  dateContainer: { marginBottom: 16 },
-  dateHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 10,
-  },
-  dateTitle: {
-    fontSize: 24,
-    fontFamily: "Montserrat-Bold",
-    color: Colors.main,
-  },
-  timeItem: {
-    padding: 10,
-    backgroundColor: Colors.primary,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  timeHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
-  timeText: {
-    fontSize: 16,
-    fontFamily: "Montserrat-Bold",
-    color: Colors.headerText,
-    marginRight: 10,
-  },
-  seriesText: {
-    fontSize: 16,
-    fontFamily: "Montserrat-Regular",
-    color: Colors.headerText,
-    marginBottom: 4,
-  },
   modalOverlay: {
     position: "absolute",
     width: "100%",
@@ -481,11 +464,6 @@ const styles = StyleSheet.create({
     width: 80,
   },
   closeButtonText: { color: Colors.primary, fontSize: 16 },
-  noDataContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 20,
-  },
   noDataText: {
     paddingTop: 10,
     fontSize: 16,
