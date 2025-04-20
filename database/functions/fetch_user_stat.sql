@@ -1,8 +1,8 @@
 --Получение статистики
 CREATE OR REPLACE FUNCTION fetch_user_stat(
     p_user_id UUID,
-    p_begin_date DATE,
-    p_end_date DATE
+    p_begin_date TIMESTAMPTZ,
+    p_end_date TIMESTAMPTZ
 ) RETURNS TABLE(id UUID, user_id UUID, date DATE, data JSON)
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -23,4 +23,4 @@ BEGIN
     ORDER BY u.date;
 END;
 $$;
-GRANT EXECUTE ON FUNCTION fetch_user_stat(UUID, DATE, DATE) TO backend;
+GRANT EXECUTE ON FUNCTION fetch_user_stat(UUID, TIMESTAMPTZ, TIMESTAMPTZ) TO backend;
