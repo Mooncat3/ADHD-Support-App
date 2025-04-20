@@ -33,7 +33,7 @@ interface User {
   surname: string;
 }
 
-const CACHE_EXPIRE = 24 * 60 * 60 * 1000;
+const CACHE_EXPIRE = 0;
 const TASK_CACHE_KEY = "daily_tasks";
 
 const TaskInfoScreen: React.FC = () => {
@@ -101,12 +101,12 @@ const TaskInfoScreen: React.FC = () => {
         }
         return false;
       });
-      if (state.isConnected && state.isInternetReachable && hasOldRecords) {
+      if (state.isConnected && state.isInternetReachable) {
         console.log(seriesStr);
-
         api
           .setStatistics(parsed)
           .then(async (response) => {
+            console.log(response);
             if (response) await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
           })
           .catch(() => {});

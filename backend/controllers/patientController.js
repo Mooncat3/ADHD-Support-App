@@ -1,6 +1,8 @@
 import pool from "../config/db.js";
 import arraysEqual from "../utilities/arrayEquals.js"
 import { fetchUserStat } from "./statisticController.js"
+import arraysEqual from "../utilities/arrayEquals.js";
+import { fetchUserStat } from "./statisticController.js";
 
 export const get = async (req, res, next) => {
   try {
@@ -19,10 +21,14 @@ export const get = async (req, res, next) => {
     next(err);
   }
 };
+const numToISOString = (date) => {
+  return new Date(date * 1000).toISOString();
+};
 
-export const setAllStatistic = async (req, res) => {
+export const setAllStatistic = async (req, res, next) => {
   try {
     const { data } = req.body;
+    const { data, timezone } = req.body;
     const patientId = req.userId;
 
     await pool.query(`SET app.user_uuid = '${patientId}'`);
@@ -34,30 +40,47 @@ export const setAllStatistic = async (req, res) => {
     await pool.query(`SET app.user_uuid = '${patientId}'`);
     const request = await pool.query(`SELECT activity FROM users_pub`);
     if (request.rows.length > 0) {
-      const activity = request.rows[0].activity
+      const activity = request.rows[0].activity;
       console.log(activity);
 
       let stats = {
-        time_stat: {}
-      }
+        time_stat: {},
+      };
       let current_date = -1;
 
       data.map(async (elem, i) => {
         if (elem.level == activity.level) {
-          const hours = `${Math.floor(Object.values(elem.time_stat)[0].timestamp_start / 3600)}`
-          const in_time = Math.floor(Object.values(elem.time_stat)[0].timestamp_start % 3600 / 60) <= 30 && 
-          activity.selected_time.includes(hours) ? true : false;
+          const hours = `${Math.floor(
+            (Object.values(elem.time_stat)[0].timestamp_start - timezone * 60) /
+              3600
+          )}`;
+          console.log(hours);
+          const in_time =
+            Math.floor(
+              (Object.values(elem.time_stat)[0].timestamp_start % 3600) / 60
+            ) <= 30 && activity.selected_time.includes(hours)
+              ? true
+              : false;
 
           let success = false;
 
           if (in_time) {
             if (activity.level === 1) {
-              success = arraysEqual(Object.values(elem.time_stat)[0].tap_count, [activity.tap_count]);
-            }
-            else
-              success = (activity.selected_time.indexOf(hours) + 1) % 2 !== 0 ? 
-              arraysEqual(Object.values(elem.time_stat)[0].tap_count, activity.tap_count) : 
-              arraysEqual(Object.values(elem.time_stat)[0].tap_count, [...activity.tap_count].reverse());
+              success = arraysEqual(
+                Object.values(elem.time_stat)[0].tap_count,
+                [activity.tap_count]
+              );
+            } else
+              success =
+                (activity.selected_time.indexOf(hours) + 1) % 2 !== 0
+                  ? arraysEqual(
+                      Object.values(elem.time_stat)[0].tap_count,
+                      activity.tap_count
+                    )
+                  : arraysEqual(
+                      Object.values(elem.time_stat)[0].tap_count,
+                      [...activity.tap_count].reverse()
+                    );
           }
 
           if (elem.date !== current_date) {
@@ -72,8 +95,8 @@ export const setAllStatistic = async (req, res) => {
                 ]);
               }
               stats = {
-                time_stat: {}
-              }
+                time_stat: {},
+              };
             }
             current_date = elem.date;
           }
@@ -82,8 +105,8 @@ export const setAllStatistic = async (req, res) => {
             timestamp_start: Object.values(elem.time_stat)[0].timestamp_start,
             success: success,
             in_time: in_time,
-            tap_count: Object.values(elem.time_stat)[0].tap_count
-          }
+            tap_count: Object.values(elem.time_stat)[0].tap_count,
+          };
 
           if (i === data.length - 1) {
             console.log(stats);
@@ -98,21 +121,21 @@ export const setAllStatistic = async (req, res) => {
           }
         }
       });
-  }
-  return res.status(200).json({
-    status: "success",
-    message: "Statistics successfully sent to db",
-  });
+    }
+    return res.status(200).json({
+      status: "success",
+      message: "Statistics successfully sent to db",
+    });
   } catch (err) {
-    res.status(500).json({ detail: `Server error: ${err.message}` });
+    next(err);
   }
 };
 
 const checkDateStatisticExist = async (curDate, patientId) => {
   try {
     const userStatistics = await fetchUserStat(patientId, curDate, curDate);
-    return !userStatistics; 
+    return !userStatistics;
   } catch (err) {
-    return false
+    return false;
   }
-}
+};
