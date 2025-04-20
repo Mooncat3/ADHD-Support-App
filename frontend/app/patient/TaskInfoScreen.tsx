@@ -104,8 +104,12 @@ const TaskInfoScreen: React.FC = () => {
       if (state.isConnected && state.isInternetReachable && hasOldRecords) {
         console.log(seriesStr);
 
-        api.setStatistics(parsed);
-        await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
+        api
+          .setStatistics(parsed)
+          .then(async (response) => {
+            if (response) await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
+          })
+          .catch(() => {});
       }
     }
   };
