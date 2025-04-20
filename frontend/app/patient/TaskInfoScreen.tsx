@@ -101,7 +101,7 @@ const TaskInfoScreen: React.FC = () => {
         }
         return false;
       });
-      if (state.isConnected && state.isInternetReachable) {
+      if (state.isConnected && state.isInternetReachable && hasOldRecords) {
         console.log(seriesStr);
         api
           .setStatistics(parsed)
