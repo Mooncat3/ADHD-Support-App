@@ -30,8 +30,6 @@ export const setAllStatistic = async (req, res) => {
     SELECT write_user_stat($1, $2, $3);
   `;
 
-    console.log(data);
-
     await pool.query(`SET app.user_uuid = '${patientId}'`);
     const request = await pool.query(`SELECT activity FROM users_pub`);
     if (request.rows.length > 0) {
@@ -63,12 +61,18 @@ export const setAllStatistic = async (req, res) => {
           if (elem.date !== current_date) {
             if (i !== 0) {
               console.log(stats);
-              await pool.query(query, [
-                patientId,
-                new Date(current_date * 1000),
-                JSON.stringify(stats),
-              ]);
-
+              try {
+                const userStatistics = await fetchUserStat(patientId, elem.date, elem.date);
+                if (!userStatistics) {
+                  await pool.query(query, [
+                    patientId,
+                    new Date(current_date * 1000),
+                    JSON.stringify(stats),
+                  ]);
+                }
+              } catch (err) {
+                next(err);
+              }
               stats = {
                 time_stat: {}
               }
@@ -85,11 +89,18 @@ export const setAllStatistic = async (req, res) => {
 
           if (i === data.length - 1) {
             console.log(stats);
-            await pool.query(query, [
-              patientId,
-              new Date(current_date * 1000),
-              JSON.stringify(stats),
-            ]);
+            try {
+              const userStatistics = await fetchUserStat(patientId, elem.date, elem.date);
+              if (!userStatistics) {
+                await pool.query(query, [
+                  patientId,
+                  new Date(current_date * 1000),
+                  JSON.stringify(stats),
+                ]);
+              }
+            } catch (err) {
+              next(err);
+            }
           }
         }
       });
