@@ -1,7 +1,7 @@
 --Запись статистики
 CREATE OR REPLACE FUNCTION write_user_stat(
     p_user_id UUID,
-    p_date DATE,
+    p_date TIMESTAMPTZ,
     p_data JSON
 ) RETURNS VOID
 LANGUAGE plpgsql
@@ -17,4 +17,4 @@ BEGIN
         data = EXCLUDED.data;  
 END;
 $$;
-GRANT EXECUTE ON FUNCTION write_user_stat(UUID, DATE, JSON) TO backend;
+GRANT EXECUTE ON FUNCTION write_user_stat(UUID, TIMESTAMPTZ, JSON) TO backend;
