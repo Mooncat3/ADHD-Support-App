@@ -84,6 +84,7 @@ const TaskInfoScreen: React.FC = () => {
     sendSeries();
     setRefreshing(false);
   };
+
   const sendSeries = async () => {
     const seriesStr = await SecureStore.getItemAsync(TASK_CACHE_KEY);
     const state = await NetInfo.fetch();
@@ -93,7 +94,6 @@ const TaskInfoScreen: React.FC = () => {
     if (parsed && Array.isArray(parsed)) {
       const currentTimestamp = Math.floor(Date.now() / 1000);
       const oneDayInSeconds = 24 * 60 * 60;
-      const seriesCacheExpire = 72 * 60 * 60;
 
       const hasOldRecords = parsed.some((item) => {
         if (item.date && typeof item.date === "number") {
@@ -106,7 +106,6 @@ const TaskInfoScreen: React.FC = () => {
         api
           .setStatistics(parsed)
           .then(async (response) => {
-            console.log(response);
             if (response) await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
           })
           .catch(() => {});

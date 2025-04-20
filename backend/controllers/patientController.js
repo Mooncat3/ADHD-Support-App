@@ -1,6 +1,4 @@
 import pool from "../config/db.js";
-import arraysEqual from "../utilities/arrayEquals.js"
-import { fetchUserStat } from "./statisticController.js"
 import arraysEqual from "../utilities/arrayEquals.js";
 import { fetchUserStat } from "./statisticController.js";
 
@@ -21,6 +19,7 @@ export const get = async (req, res, next) => {
     next(err);
   }
 };
+
 const numToISOString = (date) => {
   return new Date(date * 1000).toISOString();
 };
@@ -28,20 +27,14 @@ const numToISOString = (date) => {
 export const setAllStatistic = async (req, res, next) => {
   try {
     const { data } = req.body;
-    const { data, timezone } = req.body;
     const patientId = req.userId;
 
+    const query = `SELECT write_user_stat($1, $2, $3);`;
     await pool.query(`SET app.user_uuid = '${patientId}'`);
 
-    const query = `
-    SELECT write_user_stat($1, $2, $3);
-  `;
-
-    await pool.query(`SET app.user_uuid = '${patientId}'`);
     const request = await pool.query(`SELECT activity FROM users_pub`);
     if (request.rows.length > 0) {
       const activity = request.rows[0].activity;
-      console.log(activity);
 
       let stats = {
         time_stat: {},
@@ -49,36 +42,32 @@ export const setAllStatistic = async (req, res, next) => {
       let current_date = -1;
 
       data.map(async (elem, i) => {
-        if (elem.level == activity.level) {
+        if (elem.level === activity.level) {
+          const statObject = Object.values(elem.time_stat)[0];
+
           const hours = `${Math.floor(
-            (Object.values(elem.time_stat)[0].timestamp_start - timezone * 60) /
+            (statObject.timestamp_start - statObject.patient_timezone * 60) /
               3600
           )}`;
-          console.log(hours);
+
           const in_time =
             Math.floor(
-              (Object.values(elem.time_stat)[0].timestamp_start % 3600) / 60
-            ) <= 30 && activity.selected_time.includes(hours)
-              ? true
-              : false;
+              ((statObject.timestamp_start - statObject.patient_timezone) %
+                3600) /
+                60
+            ) <= 30 && activity.selected_time.includes(hours);
 
           let success = false;
 
           if (in_time) {
             if (activity.level === 1) {
-              success = arraysEqual(
-                Object.values(elem.time_stat)[0].tap_count,
-                [activity.tap_count]
-              );
+              success = arraysEqual(statObject.tap_count, [activity.tap_count]);
             } else
               success =
                 (activity.selected_time.indexOf(hours) + 1) % 2 !== 0
-                  ? arraysEqual(
-                      Object.values(elem.time_stat)[0].tap_count,
-                      activity.tap_count
-                    )
+                  ? arraysEqual(statObject.tap_count, activity.tap_count)
                   : arraysEqual(
-                      Object.values(elem.time_stat)[0].tap_count,
+                      statObject.tap_count,
                       [...activity.tap_count].reverse()
                     );
           }
@@ -86,11 +75,10 @@ export const setAllStatistic = async (req, res, next) => {
           if (elem.date !== current_date) {
             if (i !== 0) {
               console.log(stats);
-              const curDate = new Date(elem.date * 1000).toISOString();
-              if (checkDateStatisticExist(curDate, patientId)) {
+              if (checkDateStatisticNotExist(elem.date, patientId)) {
                 await pool.query(query, [
                   patientId,
-                  new Date(current_date * 1000).toISOString(),
+                  numToISOString(current_date),
                   JSON.stringify(stats),
                 ]);
               }
@@ -102,19 +90,19 @@ export const setAllStatistic = async (req, res, next) => {
           }
 
           stats.time_stat[Object.keys(elem.time_stat)[0]] = {
-            timestamp_start: Object.values(elem.time_stat)[0].timestamp_start,
+            timestamp_start: statObject.timestamp_start,
             success: success,
             in_time: in_time,
-            tap_count: Object.values(elem.time_stat)[0].tap_count,
+            tap_count: statObject.tap_count,
+            patient_timezone: statObject.patient_timezone,
           };
 
           if (i === data.length - 1) {
             console.log(stats);
-            const curDate = new Date(elem.date * 1000).toISOString();
-            if (checkDateStatisticExist(curDate, patientId)) {
+            if (checkDateStatisticNotExist(elem.date, patientId)) {
               await pool.query(query, [
                 patientId,
-                new Date(current_date * 1000).toISOString(),
+                numToISOString(current_date),
                 JSON.stringify(stats),
               ]);
             }
@@ -131,8 +119,9 @@ export const setAllStatistic = async (req, res, next) => {
   }
 };
 
-const checkDateStatisticExist = async (curDate, patientId) => {
+const checkDateStatisticNotExist = async (date, patientId) => {
   try {
+    const curDate = numToISOString(date);
     const userStatistics = await fetchUserStat(patientId, curDate, curDate);
     return !userStatistics;
   } catch (err) {

@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Pressable,
+  RefreshControl,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
@@ -111,7 +112,7 @@ const StatisticsScreen: React.FC = () => {
     }
   );
 
-  useEffect(() => {
+  const fetchStatistic = () => {
     setIsLoadingStatistics(true);
     setStatisticsData([]);
     api
@@ -121,12 +122,20 @@ const StatisticsScreen: React.FC = () => {
         return api.getStatistics(patientId, datesInner.start, datesInner.end);
       })
       .then((statisticsResponse) => {
-        setStatisticsData(statisticsResponse);
+        setStatisticsData(
+          statisticsResponse.sort((a: DateStatistics, b: DateStatistics) =>
+            a.date.localeCompare(b.date)
+          )
+        );
         setIsLoadingStatistics(false);
       })
       .catch(() => {
         setIsLoadingStatistics(false);
       });
+  };
+
+  useEffect(() => {
+    fetchStatistic();
   }, [datesInner]);
 
   const handleDateSelect = (selectedDate: string, type: "start" | "end") => {
@@ -141,12 +150,12 @@ const StatisticsScreen: React.FC = () => {
     }));
   };
 
-  const formatTime = (date: string, timestamp: number) => {
-    const currentDate = new Date(date);
-    const changedDate = new Date(currentDate.getTime() + timestamp * 1000);
-    const hours = changedDate.getHours();
-    const minutes = changedDate.getMinutes().toString().padStart(2, "0");
-    return `${hours}:${minutes}`;
+  const formatTime = (timestamp: number) => {
+    const hours = Math.floor(timestamp / 3600);
+    const hoursString = hours.toString().padStart(2, "0");
+    const minutes = Math.floor((timestamp / 60) % 60);
+    const minutesString = minutes.toString().padStart(2, "0");
+    return `${hoursString}:${minutesString}`;
   };
 
   const handleChange = (email: string) => {
@@ -257,7 +266,15 @@ const StatisticsScreen: React.FC = () => {
           </View>
         </View>
 
-        <ScrollView style={styles.statistics}>
+        <ScrollView
+          style={styles.statistics}
+          refreshControl={
+            <RefreshControl
+              refreshing={isLoadingStatistics}
+              onRefresh={fetchStatistic}
+            />
+          }
+        >
           {isLoadingStatistics ? (
             <ActivityIndicator size="large" color={Colors.main} />
           ) : !isLoadingStatistics && statisticsData.length === 0 ? (
@@ -287,9 +304,7 @@ const StatisticsScreen: React.FC = () => {
                   date={date}
                   level={Array.isArray(tapCount) ? 2 : undefined}
                   time_stat={timeStat}
-                  formatTime={(timestamp: number) =>
-                    formatTime(unformattedDate, timestamp)
-                  }
+                  formatTime={formatTime}
                 />
               );
             })
@@ -427,7 +442,7 @@ const styles = StyleSheet.create({
     color: Colors.headerText,
     fontFamily: "Montserrat-Regular",
   },
-  statistics: { flex: 1 },
+  statistics: { flex: 1, height: "100%" },
   modalOverlay: {
     position: "absolute",
     width: "100%",

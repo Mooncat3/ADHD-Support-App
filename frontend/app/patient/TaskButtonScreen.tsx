@@ -25,14 +25,6 @@ function getCurrentHour(now: number) {
 
 function getSecondsSinceMidnight(now: number) {
   const nowUnix = new Date(now);
-  console.log(
-    nowUnix.getUTCHours() * 3600 +
-      nowUnix.getUTCMinutes() * 60 +
-      nowUnix.getUTCSeconds()
-  );
-  console.log(
-    nowUnix.getHours() * 3600 + nowUnix.getMinutes() * 60 + nowUnix.getSeconds()
-  );
   return (
     nowUnix.getUTCHours() * 3600 +
     nowUnix.getUTCMinutes() * 60 +
@@ -139,7 +131,7 @@ export default function ButtonPage() {
         );
         todayData = {
           date: startOfDayUnix,
-          level: level,
+          level: parseInt(level),
           time_stat: {},
         };
         existingData.push(todayData);
@@ -154,13 +146,14 @@ export default function ButtonPage() {
         todayData.time_stat[currentHour] = {
           timestamp_start: timestampStart,
           tap_count: tapData,
+          patient_timezone: new Date().getTimezoneOffset(),
         };
 
         await SecureStore.setItemAsync(
           TASK_CACHE_KEY,
           JSON.stringify(existingData)
         );
-        // await SecureStore.deleteItemAsync(TASK_CACHE_KEY);
+
         console.log(JSON.stringify(existingData));
       }
     };

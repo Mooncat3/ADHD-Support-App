@@ -14,8 +14,7 @@ export const createPdfDocument = async (data) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
     doc.registerFont("OpenSans", "utilities/fonts/OpenSans-Regular.ttf");
     const buffers = [];
-    console.log("DATA");
-    console.log(data);
+
     doc.on("data", buffers.push.bind(buffers));
     doc.on("end", () => resolve(Buffer.concat(buffers)));
 
@@ -24,7 +23,7 @@ export const createPdfDocument = async (data) => {
 
     const margin = doc.page.margins.left;
 
-    const fullName = `Пациент: ${stat_meta.firstname} ${stat_meta.surname} ${stat_meta.lastname}`;
+    const fullName = `Пациент: ${stat_meta.surname} ${stat_meta.firstname} ${stat_meta.lastname}`;
 
     // ФИО
     doc

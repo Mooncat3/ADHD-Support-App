@@ -146,10 +146,8 @@ export default {
   },
 
   setStatistics: async (data) => {
-    const timezone = new Date().getTimezoneOffset();
     const response = await api.post("/patient/setAllStatistic", {
       data,
-      timezone,
     });
 
     return response.data;
