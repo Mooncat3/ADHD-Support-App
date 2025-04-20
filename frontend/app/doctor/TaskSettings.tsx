@@ -65,7 +65,7 @@ const TaskSettings = () => {
   const [level, setLevel] = useState<string>();
   const [selectedTimes, setSelectedTimes] = useState<number[]>([]);
   const [firstSeriesCount, setFirstSeriesCount] = useState<number>();
-  const [secondSeriesCount, setSecondSeriesCount] = useState<number>(1);
+  const [secondSeriesCount, setSecondSeriesCount] = useState<number>(12);
 
   const handleSave = () => {
     if (level) {

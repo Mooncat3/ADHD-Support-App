@@ -51,24 +51,27 @@ const StatisticsScreen: React.FC = () => {
     patientId: string;
   }>();
 
-  function formatStatDate(date: string): string {
-    const utcDate = new Date(date);
-    console.log(utcDate, "utcDate");
-    const timezoneOffsetMinutes = utcDate.getTimezoneOffset();
-    const localDate = new Date(
-      utcDate.getTime() - timezoneOffsetMinutes * 60000
-    );
-    console.log(timezoneOffsetMinutes);
-    return localDate.toLocaleDateString();
-  }
+  const formatStatDate = (date: string): string => {
+    const datesuka = new Date(date);
+    return new Date(
+      datesuka.getTime() - datesuka.getTimezoneOffset() * 60000
+    ).toISOString();
+  };
 
   const dateNow = new Date();
   const startDate = new Date(dateNow);
+  console.log(startDate);
   startDate.setMonth(dateNow.getMonth() - 1);
 
+  const dateToUTC = (dateString: string) => {
+    const date = new Date(dateString);
+    const utcDate = new Date(date.getTime() - 180 * 60000);
+    console.log(date.toISOString(), date.getTimezoneOffset());
+    return utcDate.toISOString();
+  };
   const [dates, setDates] = useState({
-    start: startDate.toISOString().split("T")[0],
-    end: dateNow.toISOString().split("T")[0],
+    start: dateToUTC(startDate.toISOString().split("T")[0]),
+    end: dateToUTC(dateNow.toISOString().split("T")[0]),
   });
 
   const {
@@ -95,7 +98,6 @@ const StatisticsScreen: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isLoadingStatistics, setIsLoadingStatistics] =
     useState<boolean>(false);
-  const [tempDates, setTempDates] = useState(dates);
 
   useEffect(() => {
     setIsLoadingStatistics(true);
@@ -117,9 +119,9 @@ const StatisticsScreen: React.FC = () => {
   }, [dates]);
 
   const handleDateSelect = (selectedDate: string, type: "start" | "end") => {
-    setTempDates((prev) => ({
+    setDates((prev) => ({
       ...prev,
-      [type]: selectedDate,
+      [type]: dateToUTC(selectedDate),
     }));
   };
 
@@ -136,9 +138,9 @@ const StatisticsScreen: React.FC = () => {
       .padStart(2, "0");
     return `${hours}:${minutes}`;
   };
-  function formatDate(date: string): string {
+  const formatDate = (date: string): string => {
     return date.split("-").reverse().join(".");
-  }
+  };
   const handleSendPress = () => {
     if (!validateEmail(_email)) {
       setEmailError("Некорректно введен email");
@@ -219,7 +221,7 @@ const StatisticsScreen: React.FC = () => {
               style={styles.dateButton}
               onPress={() => setShowCalendar("start")}
             >
-              <Text style={styles.dateValue}>{formatDate(dates.start)}</Text>
+              <Text style={styles.dateValue}>{dates.start}</Text>
               <AntDesign name="calendar" size={20} color={Colors.headerText} />
             </TouchableOpacity>
           </View>
@@ -230,7 +232,7 @@ const StatisticsScreen: React.FC = () => {
               style={styles.dateButton}
               onPress={() => setShowCalendar("end")}
             >
-              <Text style={styles.dateValue}>{formatDate(dates.end)}</Text>
+              <Text style={styles.dateValue}>{dates.end}</Text>
               <AntDesign name="calendar" size={20} color={Colors.headerText} />
             </TouchableOpacity>
           </View>
@@ -328,7 +330,6 @@ const StatisticsScreen: React.FC = () => {
         <Pressable
           style={styles.modalOverlay}
           onPress={() => {
-            setTempDates(dates);
             setShowCalendar(null);
           }}
         >
@@ -336,13 +337,21 @@ const StatisticsScreen: React.FC = () => {
             <Calendar
               key={showCalendar}
               markingType={"period"}
-              current={showCalendar === "start" ? dates.start : dates.end}
-              onDayPress={(day: { dateString: string }) =>
-                handleDateSelect(day.dateString, showCalendar)
+              current={
+                showCalendar === "start"
+                  ? dateToUTC(dates.start)
+                  : dateToUTC(dates.end)
               }
-              markedDates={getMarkedDates(tempDates)}
-              minDate={showCalendar === "end" ? dates.start : undefined}
-              maxDate={showCalendar === "start" ? dates.end : undefined}
+              onDayPress={(day: { dateString: string }) => {
+                handleDateSelect(day.dateString, showCalendar);
+              }}
+              markedDates={getMarkedDates(dates)}
+              minDate={
+                showCalendar === "end" ? dateToUTC(dates.start) : undefined
+              }
+              maxDate={
+                showCalendar === "start" ? dateToUTC(dates.end) : undefined
+              }
               theme={{
                 calendarBackground: Colors.primary,
                 selectedDayBackgroundColor: Colors.main,
@@ -356,7 +365,6 @@ const StatisticsScreen: React.FC = () => {
               activeOpacity={0.9}
               style={styles.closeButton}
               onPress={() => {
-                setDates(tempDates);
                 setShowCalendar(null);
               }}
             >
@@ -446,7 +454,8 @@ const styles = StyleSheet.create({
   modalContent: {
     elevation: 10,
     borderRadius: 10,
-    width: "80%",
+    width: "auto",
+    height: "auto",
     backgroundColor: Colors.primary,
     padding: 16,
     marginVertical: "auto",
