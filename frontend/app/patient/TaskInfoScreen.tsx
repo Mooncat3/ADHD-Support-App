@@ -84,15 +84,41 @@ const TaskInfoScreen: React.FC = () => {
     sendSeries();
     setRefreshing(false);
   };
+  [
+    {
+      date: 1745182800,
+      level: 2,
+      time_stat: {
+        "5": {
+          timestamp_start: 19000,
+          tap_count: [1, 2],
+          patient_timezone: -420,
+        },
+      },
+    },
+  ];
+  type SeriesItem = {
+    date: number;
+    level: number;
+    time_stat: {
+      [key: string]: {
+        timestamp_start: number;
+        tap_count: number[];
+        patient_timezone: number;
+        local_series_end: number;
+      };
+    };
+  };
 
   const sendSeries = async () => {
     try {
       const seriesStr = await AsyncStorage.getItem(TASK_CACHE_KEY);
       if (!seriesStr) return;
-      const state = await NetInfo.fetch();
-      if (!state.isConnected || !state.isInternetReachable) return;
 
-      let parsed;
+      const state = await NetInfo.fetch();
+      if (!state.isConnected && !state.isInternetReachable) return;
+
+      let parsed: SeriesItem[];
       try {
         parsed = JSON.parse(seriesStr);
         if (!Array.isArray(parsed)) return;
@@ -100,68 +126,83 @@ const TaskInfoScreen: React.FC = () => {
         console.error("Failed to parse stored data", e);
         return;
       }
-      const currentTimestamp = Math.floor(Date.now() / 1000);
-      console.log(currentTimestamp);
-      const oneDayInSeconds = 24 * 60 * 60;
 
-      const oldRecords = parsed.filter(
-        (item) =>
-          item?.date &&
-          typeof item.date === "number" &&
-          currentTimestamp - item.date >= oneDayInSeconds
+      // Группируем записи по локальной дате
+      const groupedByLocalDate: Record<number, SeriesItem[]> = parsed.reduce(
+        (groups, item) => {
+          if (!item.date || !item.time_stat) return groups;
+
+          const statValues = Object.values(item.time_stat);
+          if (statValues.length === 0) return groups;
+
+          const statObject = statValues[0];
+          if (!statObject) return groups;
+
+          // Рассчитываем локальную дату окончания серии
+          const localSeriesEnd = new Date(
+            statObject.local_series_end - statObject.timestamp_start * 1000
+          );
+
+          const localDateKey =
+            new Date(
+              localSeriesEnd.getFullYear(),
+              localSeriesEnd.getMonth(),
+              localSeriesEnd.getDate()
+            ).getTime() / 1000;
+          if (!groups[localDateKey]) {
+            groups[localDateKey] = [];
+          }
+          groups[localDateKey].push(item);
+          return groups;
+        },
+        {} as Record<number, SeriesItem[]>
       );
 
-      if (oldRecords.length === 0) return;
-
-      const groupedByDate = oldRecords.reduce((groups, item) => {
-        const date = new Date(item.date * 1000);
-        const statObject = Object.values(item.time_stat)[0] as {
-          patient_timezone: number;
-        };
-        const localDate = new Date(
-          date.getTime() + statObject.patient_timezone * 60 * 1000
-        );
-        console.log(localDate);
-        const dateKey =
-          new Date(localDate.setHours(0, 0, 0, 0)).getTime() / 1000;
-        console.log(dateKey);
-        if (!groups[dateKey]) {
-          groups[dateKey] = [];
-        }
-        groups[dateKey].push(item);
-        return groups;
-      }, {});
-
-      const dateKeys = Object.keys(groupedByDate).map(Number);
+      const oneDayInSeconds = 24 * 60 * 60;
       let remainingData = [...parsed];
+      for (const [localDateKeyStr, itemsForDate] of Object.entries(
+        groupedByLocalDate
+      )) {
+        const localDateKey = Number(localDateKeyStr);
+        const currentItems = itemsForDate as SeriesItem[];
 
-      for (const dateKey of dateKeys) {
-        const itemsForDate = groupedByDate[dateKey];
+        // Проверяем, не является ли дата сегодняшней
+        const now = Date.now() / 1000;
+        if (now - localDateKey - oneDayInSeconds < oneDayInSeconds) continue;
+
+        const minDateInGroup = Math.min(
+          ...currentItems.map((item) => item.date)
+        );
+
+        // Создаем новые записи с одинаковой (минимальной) датой
+        const transformedItems = currentItems.map((item) => ({
+          ...item,
+          date: minDateInGroup,
+        }));
 
         try {
-          const response = await api.setStatistics(itemsForDate);
-
+          const response = await api.setStatistics(transformedItems);
           if (response) {
-            console.log(seriesStr, groupedByDate);
             remainingData = remainingData.filter(
-              (item) => !itemsForDate.includes(item)
+              (item) => !currentItems.includes(item)
             );
-
-            if (remainingData.length > 0) {
-              await AsyncStorage.setItem(
-                TASK_CACHE_KEY,
-                JSON.stringify(remainingData)
-              );
-            } else {
-              await AsyncStorage.removeItem(TASK_CACHE_KEY);
-            }
           }
         } catch (error) {
           console.error(
-            `Failed to send data for date ${new Date(dateKey * 1000)}:`,
+            `Failed to send data for date ${new Date(localDateKey * 1000)}:`,
             error
           );
         }
+      }
+
+      // Обновляем кеш
+      if (remainingData.length > 0) {
+        await AsyncStorage.setItem(
+          TASK_CACHE_KEY,
+          JSON.stringify(remainingData)
+        );
+      } else {
+        await AsyncStorage.removeItem(TASK_CACHE_KEY);
       }
     } catch (error) {
       console.error("Error in sendSeries:", error);

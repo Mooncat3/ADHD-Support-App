@@ -147,6 +147,7 @@ export default function ButtonPage() {
           timestamp_start: timestampStart,
           tap_count: tapData,
           patient_timezone: new Date().getTimezoneOffset(),
+          local_series_end: Date.now(),
         };
 
         await AsyncStorage.setItem(
