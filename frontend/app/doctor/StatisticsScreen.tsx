@@ -86,17 +86,16 @@ const StatisticsScreen: React.FC = () => {
 
   const formatStatDate = (date: string): string => {
     const currentDate = new Date(date);
-    return formatDate(delTime(new Date(currentDate.getTime() + 180 * 60000)));
+    return formatDate(delTime(currentDate));
   };
 
   const dateToUTC = (dateString: string) => {
     const date = new Date(dateString);
-    const utcDate = new Date(date.getTime() - 180 * 60000);
-    return utcDate.toISOString();
+    return date.toISOString();
   };
 
   const dateNow = new Date();
-  dateNow.setTime(dateNow.getTime() - dateNow.getTimezoneOffset() * 60000);
+  dateNow.setTime(dateNow.getTime() - dateNow.getTimezoneOffset() * 60 * 1000);
   const startDate = new Date(dateNow);
   startDate.setMonth(dateNow.getMonth() - 1);
 
