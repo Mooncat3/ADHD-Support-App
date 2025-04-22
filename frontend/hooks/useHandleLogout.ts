@@ -1,5 +1,7 @@
 import { deleteTokenFromSecureStore } from "@/scripts/jwt";
 import { Router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const useHandleLogout = async (
   router: Router,
   deleteTokens: boolean = true
@@ -13,7 +15,10 @@ const useHandleLogout = async (
 
     await deleteTokenFromSecureStore("role");
     await deleteTokenFromSecureStore("user");
-    await deleteTokenFromSecureStore("daily_tasks");
+
+    try {
+      await AsyncStorage.removeItem("daily_tasks");
+    } catch (_) {}
   }
 };
 
