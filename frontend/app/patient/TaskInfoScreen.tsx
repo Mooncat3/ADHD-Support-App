@@ -86,30 +86,85 @@ const TaskInfoScreen: React.FC = () => {
   };
 
   const sendSeries = async () => {
-    const seriesStr = await AsyncStorage.getItem(TASK_CACHE_KEY);
-    const state = await NetInfo.fetch();
-    let parsed;
-    if (seriesStr) parsed = JSON.parse(seriesStr);
+    try {
+      const seriesStr = await AsyncStorage.getItem(TASK_CACHE_KEY);
+      if (!seriesStr) return;
+      const state = await NetInfo.fetch();
+      if (!state.isConnected || !state.isInternetReachable) return;
 
-    if (parsed && Array.isArray(parsed)) {
+      let parsed;
+      try {
+        parsed = JSON.parse(seriesStr);
+        if (!Array.isArray(parsed)) return;
+      } catch (e) {
+        console.error("Failed to parse stored data", e);
+        return;
+      }
       const currentTimestamp = Math.floor(Date.now() / 1000);
+      console.log(currentTimestamp);
       const oneDayInSeconds = 24 * 60 * 60;
 
-      const hasOldRecords = parsed.some((item) => {
-        if (item.date && typeof item.date === "number") {
-          return currentTimestamp - item.date >= oneDayInSeconds;
+      const oldRecords = parsed.filter(
+        (item) =>
+          item?.date &&
+          typeof item.date === "number" &&
+          currentTimestamp - item.date >= oneDayInSeconds
+      );
+
+      if (oldRecords.length === 0) return;
+
+      const groupedByDate = oldRecords.reduce((groups, item) => {
+        const date = new Date(item.date * 1000);
+        const statObject = Object.values(item.time_stat)[0] as {
+          patient_timezone: number;
+        };
+        const localDate = new Date(
+          date.getTime() + statObject.patient_timezone * 60 * 1000
+        );
+        console.log(localDate);
+        const dateKey =
+          new Date(localDate.setHours(0, 0, 0, 0)).getTime() / 1000;
+        console.log(dateKey);
+        if (!groups[dateKey]) {
+          groups[dateKey] = [];
         }
-        return false;
-      });
-      if (state.isConnected && state.isInternetReachable && hasOldRecords) {
-        console.log(seriesStr);
-        api
-          .setStatistics(parsed)
-          .then(async (response) => {
-            if (response) await AsyncStorage.removeItem(TASK_CACHE_KEY);
-          })
-          .catch(() => {});
+        groups[dateKey].push(item);
+        return groups;
+      }, {});
+
+      const dateKeys = Object.keys(groupedByDate).map(Number);
+      let remainingData = [...parsed];
+
+      for (const dateKey of dateKeys) {
+        const itemsForDate = groupedByDate[dateKey];
+
+        try {
+          const response = await api.setStatistics(itemsForDate);
+
+          if (response) {
+            console.log(seriesStr, groupedByDate);
+            remainingData = remainingData.filter(
+              (item) => !itemsForDate.includes(item)
+            );
+
+            if (remainingData.length > 0) {
+              await AsyncStorage.setItem(
+                TASK_CACHE_KEY,
+                JSON.stringify(remainingData)
+              );
+            } else {
+              await AsyncStorage.removeItem(TASK_CACHE_KEY);
+            }
+          }
+        } catch (error) {
+          console.error(
+            `Failed to send data for date ${new Date(dateKey * 1000)}:`,
+            error
+          );
+        }
       }
+    } catch (error) {
+      console.error("Error in sendSeries:", error);
     }
   };
   useEffect(() => {
