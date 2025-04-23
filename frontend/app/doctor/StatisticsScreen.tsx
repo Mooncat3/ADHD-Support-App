@@ -115,13 +115,7 @@ const StatisticsScreen: React.FC = () => {
     setIsLoadingStatistics(true);
     setStatisticsData([]);
     api
-      .doctorData()
-      .then((user) => {
-        if (!_email) {
-          setEmail(user.email);
-        }
-        return api.getStatistics(patientId, datesInner.start, datesInner.end);
-      })
+      .getStatistics(patientId, datesInner.start, datesInner.end)
       .then((statisticsResponse) => {
         setStatisticsData(
           statisticsResponse.sort((a: DateStatistics, b: DateStatistics) =>
@@ -138,6 +132,11 @@ const StatisticsScreen: React.FC = () => {
   useEffect(() => {
     fetchStatistic();
   }, [datesInner]);
+  useEffect(() => {
+    api.doctorData().then((user) => {
+      setEmail(user.email);
+    });
+  }, []);
 
   const handleDateSelect = (selectedDate: string, type: "start" | "end") => {
     setDates((prev) => ({
