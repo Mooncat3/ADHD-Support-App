@@ -95,7 +95,7 @@ export const getStatisticsFile = async (req, res, next) => {
 const utcToLocale = (date, timezone) => {
   const currentDate = new Date(date);
   const newDate = new Date(currentDate.getTime() - timezone * 60 * 1000);
-  return newDate.toISOString().split("T")[0];
+  return newDate.toLocaleDateString("ru-RU");
 };
 
 export const sendFileEmail = async (req, res, next) => {

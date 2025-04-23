@@ -11,9 +11,13 @@ const showError = (message: string) => {
   }
 };
 
+const formatDate = (date: string): string => {
+  const currentDate = new Date(date);
+  return currentDate.toLocaleDateString("ru-RU");
+};
+
 export const handleGetStatistics = async (
   patientId: any,
-  dates: { start: string; end: string },
   datesInner: { start: string; end: string },
   fullName: string
 ) => {
@@ -32,7 +36,9 @@ export const handleGetStatistics = async (
         showError("Разрешение на доступ к файлам не получено");
         return;
       }
-      const filename = `Отчёт ${fullName} за ${dates.start} - ${dates.end}.pdf`;
+      const filename = `Отчёт ${fullName} за ${formatDate(
+        datesInner.start
+      )} - ${formatDate(datesInner.end)}.pdf`;
 
       const newFileUri = await SAF.StorageAccessFramework.createFileAsync(
         permissions.directoryUri,
@@ -54,8 +60,8 @@ export const handleGetStatistics = async (
   } catch (error: any) {
     if (error.message && error.message.includes("ENOSPC")) {
       showError("Недостаточно места на устройстве");
-    } else if (error.status == "404") {
-      showError("У данного пациента нет статистики");
+    } else if (error.status === "404") {
+      showError("У данного пациента нет статистики за этот период");
     } else {
       console.log(error);
       showError("Ошибка при скачивании статистики");

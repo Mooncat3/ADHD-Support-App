@@ -31,8 +31,8 @@ export const handleSendStatistics = async (
       showError("Папка переполнена, не удалось создать файл.");
     } else if (error.message && error.message.includes("ENOSPC")) {
       showError("Недостаточно места на устройстве");
-    } else if (error.status == "404") {
-      showError("У данного пациента нет статистики");
+    } else if (error.status === "404") {
+      showError("У данного пациента нет статистики за этот период");
     } else {
       console.log(error);
       showError("Ошибка при отправке статистики");

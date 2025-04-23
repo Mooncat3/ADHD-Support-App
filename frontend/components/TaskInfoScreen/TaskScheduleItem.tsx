@@ -137,10 +137,11 @@ const TaskScheduleItem: React.FC<TaskScheduleItemProps> = ({
   };
 
   const getContentHeight = () => {
-    if (isStatisticsMode && time_stat) {
-      return Object.keys(time_stat).length * 120;
+    if (isStatisticsMode && time_stat && level !== undefined) {
+      const multiplier = level === 2 ? 1.3 : 1;
+      return Object.keys(time_stat).length * 90 * multiplier;
     }
-    return level === 1 ? 40 : 100;
+    return level === 1 ? 30 : 65;
   };
 
   return (
