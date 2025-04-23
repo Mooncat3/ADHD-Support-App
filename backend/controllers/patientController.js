@@ -27,7 +27,7 @@ const numToISOString = (date) => {
 
 export const setAllStatistic = async (req, res, next) => {
   try {
-    const { data } = req.body;
+    const { data, is_utc_day_changed } = req.body;
     const patientId = req.userId;
 
     const query = `SELECT write_user_stat($1, $2, $3);`;
@@ -96,6 +96,7 @@ export const setAllStatistic = async (req, res, next) => {
             tap_count: statObject.tap_count,
             patient_timezone: statObject.patient_timezone,
           };
+          stats.is_utc_day_changed = !!statObject.is_utc_day_changed;
 
           if (i === data.length - 1) {
             console.log(stats);

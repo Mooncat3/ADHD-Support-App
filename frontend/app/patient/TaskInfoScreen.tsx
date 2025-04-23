@@ -88,6 +88,7 @@ const TaskInfoScreen: React.FC = () => {
   type SeriesItem = {
     date: number;
     level: number;
+    is_utc_day_changed: boolean;
     time_stat: {
       [key: string]: {
         timestamp_start: number;
@@ -163,10 +164,21 @@ const TaskInfoScreen: React.FC = () => {
         );
 
         // Создаем новые записи с одинаковой (минимальной) датой
-        const transformedItems = currentItems.map((item) => ({
-          ...item,
-          date: minDateInGroup,
-        }));
+        const isUTCDayChanged = currentItems.some(
+          (item) => item.date !== minDateInGroup
+        );
+
+        const transformedItems = (
+          JSON.parse(JSON.stringify(currentItems)) as typeof currentItems
+        ).map((item) => {
+          const value = Object.values(item.time_stat)[0];
+          if (value.patient_timezone < 0)
+            value.timestamp_start += item.date - minDateInGroup;
+          else if (!isUTCDayChanged) value.timestamp_start -= 86400;
+          item.date = minDateInGroup;
+          item.is_utc_day_changed = isUTCDayChanged;
+          return item;
+        });
 
         try {
           const response = await api.setStatistics(transformedItems);
