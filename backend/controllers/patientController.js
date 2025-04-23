@@ -27,7 +27,7 @@ const numToISOString = (date) => {
 
 export const setAllStatistic = async (req, res, next) => {
   try {
-    const { data, is_utc_day_changed } = req.body;
+    const { data } = req.body;
     const patientId = req.userId;
 
     const query = `SELECT write_user_stat($1, $2, $3);`;
