@@ -133,9 +133,14 @@ const StatisticsScreen: React.FC = () => {
     fetchStatistic();
   }, [datesInner]);
   useEffect(() => {
-    api.doctorData().then((user) => {
-      setEmail(user.email);
-    });
+    api
+      .doctorData()
+      .then((user) => {
+        setEmail(user.email);
+      })
+      .catch(() => {
+        setIsLoadingStatistics(false);
+      });
   }, []);
 
   const handleDateSelect = (selectedDate: string, type: "start" | "end") => {
