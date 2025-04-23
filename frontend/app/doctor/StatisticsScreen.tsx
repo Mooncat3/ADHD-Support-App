@@ -117,7 +117,9 @@ const StatisticsScreen: React.FC = () => {
     api
       .doctorData()
       .then((user) => {
-        setEmail(user.email);
+        if (!_email) {
+          setEmail(user.email);
+        }
         return api.getStatistics(patientId, datesInner.start, datesInner.end);
       })
       .then((statisticsResponse) => {

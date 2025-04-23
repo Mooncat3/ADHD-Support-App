@@ -38,11 +38,10 @@ export async function sendEmailWithAttachment({
   };
 
   const transporter = nodemailer.createTransport({
-    service: "gmail",
     auth,
-    host: "smtp.gmail.com",
-    port: 467,
-    secure: false,
+    host: "mail.cs.petrsu.ru",
+    port: 465,
+    secure: true,
   });
 
   const mailOptions = {
