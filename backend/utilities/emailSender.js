@@ -50,7 +50,7 @@ export async function sendEmailWithAttachment({
   });
 
   const mailOptions = {
-    from: `"Stay Focused" <${auth.user}>`,
+    from: `"${process.env.SMTP_FROM}" <${auth.user}>`,
     to,
     subject,
     text,
