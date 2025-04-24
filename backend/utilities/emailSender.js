@@ -46,11 +46,16 @@ export async function sendEmailWithAttachment({
     auth,
     host: process.env.SMTP_HOST,
     port,
-    secure: true,
+    secureConnection: true,
+    tls: {
+      ciphers: "SSLv3",
+    },
   });
 
+  const email = process.env.SMTP_EMAIL ? process.env.SMTP_EMAIL : auth.user;
+
   const mailOptions = {
-    from: `"${process.env.SMTP_FROM}" <${auth.user}>`,
+    from: `"${process.env.SMTP_FROM}" <${email}>`,
     to,
     subject,
     text,
