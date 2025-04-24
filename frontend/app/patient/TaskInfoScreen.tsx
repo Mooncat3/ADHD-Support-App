@@ -176,7 +176,7 @@ const TaskInfoScreen: React.FC = () => {
             value.timestamp_start += item.date - minDateInGroup;
           else if (!isUTCDayChanged) value.timestamp_start -= 86400;
           item.date = minDateInGroup;
-          item.is_utc_day_changed = isUTCDayChanged;
+          if (isUTCDayChanged) item.is_utc_day_changed = true;
           return item;
         });
 

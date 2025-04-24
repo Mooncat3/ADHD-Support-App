@@ -96,7 +96,7 @@ export const setAllStatistic = async (req, res, next) => {
             tap_count: statObject.tap_count,
             patient_timezone: statObject.patient_timezone,
           };
-          stats.is_utc_day_changed = !!elem.is_utc_day_changed;
+          if (!!elem.is_utc_day_changed) stats.is_utc_day_changed = true;
 
           if (i === data.length - 1) {
             console.log(stats);
