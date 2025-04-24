@@ -143,7 +143,6 @@ const TaskInfoScreen: React.FC = () => {
       );
 
       let remainingData = [...parsed];
-      console.log(JSON.stringify(groupedByLocalDate));
 
       for (const [localDateKeyStr, currentItems] of Object.entries(
         groupedByLocalDate
