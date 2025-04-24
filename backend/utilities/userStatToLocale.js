@@ -16,7 +16,7 @@ const userStatToLocale = (userStatistics, startDate, endDate) => {
     const isUTCDayChanged = !!data.is_utc_day_changed;
 
     Object.entries(data.time_stat).forEach(([k, v]) => {
-      if (k.length > 2) return;
+      if (isNaN(parseInt(k))) return;
 
       const objectToSave = {
         ...v,
