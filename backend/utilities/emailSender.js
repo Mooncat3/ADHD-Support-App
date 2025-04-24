@@ -39,8 +39,8 @@ export async function sendEmailWithAttachment({
 
   const transporter = nodemailer.createTransport({
     auth,
-    host: "mail.cs.petrsu.ru",
-    port: 465,
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
     secure: true,
   });
 
