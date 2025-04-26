@@ -157,8 +157,8 @@ const RegistrationForm: React.FC<RegistrationFieldsProps> = ({
       style={styles.container}
     >
       <ScrollView>
-        {renderInput("firstName", "Имя", filterNameText)}
         {renderInput("secondName", "Фамилия", filterNameText)}
+        {renderInput("firstName", "Имя", filterNameText)}
         {renderInput("patronymic", "Отчество", filterNameText)}
         {renderInput("username", "Логин", filterUsernameText)}
         {renderInput("password", "Пароль", filterPasswordText)}
