@@ -11,9 +11,19 @@ export const fetchUserStat = async (
 ) => {
   await pool.query(`SET app.user_uuid = '${patientId}'`);
 
+  const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+
+  const startDateDB = new Date(startDate);
+  startDateDB.setTime(startDateDB.getTime() - oneDayInMilliseconds);
+  const endDateDB = new Date(endDate);
+  endDateDB.setTime(endDateDB.getTime() + oneDayInMilliseconds);
+
+  const dbParams = locale
+    ? [patientId, startDateDB.toISOString(), endDateDB.toISOString()]
+    : [patientId, startDate, endDate];
   const request = await pool.query(
     "SELECT * FROM fetch_user_stat($1, $2, $3);",
-    [patientId, startDate, endDate]
+    dbParams
   );
 
   const userStatistics = request.rows;
