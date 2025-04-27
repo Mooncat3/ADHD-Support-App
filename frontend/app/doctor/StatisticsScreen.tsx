@@ -321,7 +321,6 @@ const StatisticsScreen: React.FC = () => {
       </View>
 
       <KeyboardAvoidingView
-        style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <Footer
