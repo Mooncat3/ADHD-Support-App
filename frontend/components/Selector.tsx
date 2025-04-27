@@ -63,7 +63,9 @@ const Selector: React.FC<SelectorProps> = ({
     <View style={styles.container}>
       <>
         {mainLabel && (
-          <Text style={[styles.label, { flex: 1 }]}>{mainLabel}</Text>
+          <Text numberOfLines={2} style={[styles.label, { flex: 1 }]}>
+            {mainLabel}
+          </Text>
         )}
       </>
       <View style={[styles.options, !mainLabel && styles.compactOptions]}>
@@ -87,7 +89,7 @@ const Selector: React.FC<SelectorProps> = ({
             onLayout={(event) => handleLayout(event, k)}
           >
             <Text
-              numberOfLines={1}
+              numberOfLines={2}
               style={[
                 selected === k ? styles.selectedText : styles.unselectedText,
               ]}
@@ -123,18 +125,18 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   option: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 16,
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1,
-    ...(Platform.OS === "ios" ? { flexShrink: 1 } : {}),
+    flexShrink: 1,
   },
   cursor: {
     position: "absolute",
     height: "100%",
-    backgroundColor: "#ffffff",
+    backgroundColor: Colors.primary,
     borderRadius: 20,
     boxShadow: "0px 6px 12px rgba(0, 0, 0, 0.1)",
   },
