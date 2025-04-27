@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Keyboard, Text } from "react-native";
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Keyboard,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import Header from "@/components/Header";
 import RegistrationForm from "@/components/DoctorMain/RegistrationForm";
 import PatientList from "@/components/DoctorMain/PatientList";
@@ -199,15 +207,19 @@ const DoctorMain: React.FC = () => {
             />
           </ScrollView>
 
-          <Footer
-            components={[
-              <FooterButton
-                onPress={handleRegister}
-                label="Зарегистрировать"
-                key="1"
-              />,
-            ]}
-          />
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          >
+            <Footer
+              components={[
+                <FooterButton
+                  onPress={handleRegister}
+                  label="Зарегистрировать"
+                  key="1"
+                />,
+              ]}
+            />
+          </KeyboardAvoidingView>
         </>
       )}
     </View>

@@ -6,6 +6,7 @@ import {
   View,
   Animated,
   LayoutChangeEvent,
+  Platform,
 } from "react-native";
 import { Colors } from "@/constants/Colors";
 
@@ -60,7 +61,11 @@ const Selector: React.FC<SelectorProps> = ({
 
   return (
     <View style={styles.container}>
-      <>{mainLabel && <Text style={styles.label}>{mainLabel}</Text>}</>
+      <>
+        {mainLabel && (
+          <Text style={[styles.label, { flex: 1 }]}>{mainLabel}</Text>
+        )}
+      </>
       <View style={[styles.options, !mainLabel && styles.compactOptions]}>
         {ready && (
           <Animated.View
@@ -103,7 +108,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   label: {
-    fontSize: 16,
+    fontSize: Platform.OS === "ios" ? 14 : 16,
     color: "#636262",
     fontFamily: "Montserrat-SemiBold",
     marginRight: "auto",
@@ -124,6 +129,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1,
+    ...(Platform.OS === "ios" ? { flexShrink: 1 } : {}),
   },
   cursor: {
     position: "absolute",
@@ -135,12 +141,12 @@ const styles = StyleSheet.create({
   selectedText: {
     color: "#636262",
     fontFamily: "Montserrat-SemiBold",
-    fontSize: 13,
+    fontSize: 14,
   },
   unselectedText: {
     color: Colors.main,
     fontFamily: "Montserrat-SemiBold",
-    fontSize: 13,
+    fontSize: 14,
   },
 });
 

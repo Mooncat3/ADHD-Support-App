@@ -1,9 +1,10 @@
 import api from "@/scripts/api";
 import * as SAF from "expo-file-system";
 import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
 import { ToastAndroid, Platform, Alert } from "react-native";
 
-const showError = (message: string) => {
+const showMessage = (message: string) => {
   if (Platform.OS === "android") {
     ToastAndroid.show(message, ToastAndroid.SHORT);
   } else {
@@ -29,42 +30,56 @@ export const handleGetStatistics = async (
     );
 
     if (statistics) {
-      const permissions =
-        await SAF.StorageAccessFramework.requestDirectoryPermissionsAsync();
-
-      if (!permissions.granted) {
-        showError("Разрешение на доступ к файлам не получено");
-        return;
-      }
       const filename = `Отчёт ${fullName} за ${formatDate(
         datesInner.start
       )} - ${formatDate(datesInner.end)}.pdf`;
+      if (Platform.OS === "android") {
+        const permissions =
+          await SAF.StorageAccessFramework.requestDirectoryPermissionsAsync();
 
-      const newFileUri = await SAF.StorageAccessFramework.createFileAsync(
-        permissions.directoryUri,
-        filename.replaceAll(" ", "_"),
-        "application/pdf"
-      );
+        if (!permissions.granted) {
+          showMessage("Разрешение на доступ к файлам не получено");
+          return;
+        }
+        const newFileUri = await SAF.StorageAccessFramework.createFileAsync(
+          permissions.directoryUri,
+          filename.replaceAll(" ", "_"),
+          "application/pdf"
+        );
 
-      await FileSystem.writeAsStringAsync(newFileUri, statistics, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+        await FileSystem.writeAsStringAsync(newFileUri, statistics, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
 
-      const decodedUri = decodeURIComponent(permissions.directoryUri);
-      const directoryName = decodedUri.replace(/.*[:\/]/, "");
+        const decodedUri = decodeURIComponent(permissions.directoryUri);
+        const directoryName = decodedUri.replace(/.*[:\/]/, "");
 
-      showError(`PDF успешно сохранён в папку: ${directoryName}`);
+        showMessage(`PDF успешно сохранён в папку: ${directoryName}`);
+      } else if (Platform.OS === "ios") {
+        const fileUri = FileSystem.documentDirectory + filename;
+
+        await FileSystem.writeAsStringAsync(fileUri, statistics, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "application/pdf",
+          dialogTitle: "Поделитесь вашим отчётом",
+        });
+
+        await FileSystem.deleteAsync(fileUri);
+      }
     } else {
-      showError("Не удалось получить статистику");
+      showMessage("Не удалось получить статистику");
     }
   } catch (error: any) {
     if (error.message && error.message.includes("ENOSPC")) {
-      showError("Недостаточно места на устройстве");
+      showMessage("Недостаточно места на устройстве");
     } else if (error.status === "404") {
-      showError("У данного пациента нет статистики за этот период");
+      showMessage("У данного пациента нет статистики за этот период");
     } else {
       console.log(error);
-      showError("Ошибка при скачивании статистики");
+      showMessage("Ошибка при скачивании статистики");
     }
   }
 };

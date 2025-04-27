@@ -7,6 +7,9 @@ import {
   ScrollView,
   Pressable,
   RefreshControl,
+  Modal,
+  Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import Header from "@/components/Header";
@@ -213,7 +216,6 @@ const StatisticsScreen: React.FC = () => {
 
     while (current <= endDate) {
       const dateStr = delTime(current);
-
       if (dateStr === startStr) {
         markedDates[dateStr] = {
           startingDay: true,
@@ -240,7 +242,7 @@ const StatisticsScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { flex: 1 }]}>
       <LoadingModal visible={isLoading} message="Отправка.." />
       <Header title={formattedFirstName} createBackButton />
       <View style={styles.content}>
@@ -251,7 +253,7 @@ const StatisticsScreen: React.FC = () => {
               style={styles.dateButton}
               onPress={() => setShowCalendar("start")}
             >
-              <Text style={styles.dateValue}>
+              <Text style={styles.dateValue} numberOfLines={1}>
                 {formatStatDate(dates.start)}
               </Text>
               <AntDesign name="calendar" size={20} color={Colors.headerText} />
@@ -259,7 +261,9 @@ const StatisticsScreen: React.FC = () => {
           </View>
 
           <View style={styles.dateWrapper}>
-            <Text style={styles.dateLabel}>Дата окончания</Text>
+            <Text style={styles.dateLabel} numberOfLines={1}>
+              Дата окончания
+            </Text>
             <TouchableOpacity
               style={styles.dateButton}
               onPress={() => setShowCalendar("end")}
@@ -316,43 +320,48 @@ const StatisticsScreen: React.FC = () => {
         </ScrollView>
       </View>
 
-      <Footer
-        components={[
-          <View
-            style={{
-              flexDirection: "row",
-              width: "100%",
-            }}
-            key="1"
-          >
-            <TextField
-              style={styles.emailInput}
-              placeholderTextColor={Colors.headerText}
-              value={_email}
-              onChangeText={(email) => handleChange(email)}
-              label="Email"
-            />
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.sendButton}
-              onPress={() => handleSendPress()}
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <Footer
+          components={[
+            <View
+              style={{
+                flexDirection: "row",
+                width: "100%",
+              }}
+              key="1"
             >
-              <Feather name="send" size={24} color={Colors.primary} />
-            </TouchableOpacity>
-          </View>,
-          <View key="2">
-            {emailError && <Text style={styles.errorText}>{emailError}</Text>}
-          </View>,
-          <FooterButton
-            key="3"
-            label="Скачать статистику"
-            iconName="download"
-            onPress={() =>
-              handleGetStatistics(patientId, datesInner, formattedFirstName)
-            }
-          />,
-        ]}
-      />
+              <TextField
+                style={styles.emailInput}
+                placeholderTextColor={Colors.headerText}
+                value={_email}
+                onChangeText={handleChange}
+                label="Email"
+              />
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={styles.sendButton}
+                onPress={handleSendPress}
+              >
+                <Feather name="send" size={24} color={Colors.primary} />
+              </TouchableOpacity>
+            </View>,
+            <View key="2">
+              {emailError && <Text style={styles.errorText}>{emailError}</Text>}
+            </View>,
+            <FooterButton
+              key="3"
+              label="Скачать статистику"
+              iconName="download"
+              onPress={() =>
+                handleGetStatistics(patientId, datesInner, formattedFirstName)
+              }
+            />,
+          ]}
+        />
+      </KeyboardAvoidingView>
 
       <ModalWindow
         visible={modalVisible}
@@ -367,47 +376,54 @@ const StatisticsScreen: React.FC = () => {
       />
 
       {showCalendar && (
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => {
-            setShowCalendar(null);
-          }}
+        <Modal
+          transparent
+          animationType="fade"
+          visible={!!showCalendar}
+          onRequestClose={() => setShowCalendar(null)}
         >
-          <Pressable onPress={() => {}} style={[styles.modalContent]}>
-            <Calendar
-              key={showCalendar}
-              markingType={"period"}
-              current={showCalendar === "start" ? dates.start : dates.end}
-              onDayPress={(day: { dateString: string }) => {
-                handleDateSelect(day.dateString, showCalendar);
-              }}
-              markedDates={getMarkedDates(dates)}
-              minDate={showCalendar === "end" ? dates.start : undefined}
-              maxDate={showCalendar === "start" ? dates.end : undefined}
-              theme={{
-                calendarBackground: Colors.primary,
-                selectedDayBackgroundColor: Colors.main,
-                selectedDayTextColor: Colors.primary,
-                todayTextColor: Colors.main,
-                dayTextColor: Colors.headerText,
-                arrowColor: Colors.main,
-              }}
-            />
-            <TouchableOpacity
-              activeOpacity={0.9}
-              style={styles.closeButton}
-              onPress={() => {
-                setShowCalendar(null);
-              }}
-            >
-              <Text style={styles.closeButtonText}>OK</Text>
-            </TouchableOpacity>
+          <Pressable
+            style={styles.modalOverlay}
+            onPress={() => setShowCalendar(null)}
+          >
+            <Pressable onPress={() => {}} style={[styles.modalContent]}>
+              <Calendar
+                markingType={"period"}
+                current={showCalendar === "start" ? dates.start : dates.end}
+                onDayPress={(day: { dateString: string }) => {
+                  handleDateSelect(day.dateString, showCalendar);
+                }}
+                markedDates={getMarkedDates(dates)}
+                minDate={showCalendar === "end" ? dates.start : undefined}
+                maxDate={showCalendar === "start" ? dates.end : undefined}
+                theme={{
+                  calendarBackground: Colors.primary,
+                  selectedDayBackgroundColor: Colors.main,
+                  selectedDayTextColor: Colors.primary,
+                  todayTextColor: Colors.main,
+                  dayTextColor: Colors.headerText,
+                  arrowColor: Colors.main,
+                }}
+                style={{ flexGrow: 1 }}
+              />
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={styles.closeButton}
+                onPress={() => {
+                  setShowCalendar(null);
+                }}
+              >
+                <Text style={styles.closeButtonText}>OK</Text>
+              </TouchableOpacity>
+            </Pressable>
           </Pressable>
-        </Pressable>
+        </Modal>
       )}
     </View>
   );
 };
+
+const fontSizeLabel = Platform.OS === "ios" ? 13 : 14;
 
 const styles = StyleSheet.create({
   container: {
@@ -436,7 +452,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   dateLabel: {
-    fontSize: 14,
+    fontSize: fontSizeLabel,
     color: Colors.headerText,
     textAlign: "center",
     fontFamily: "Montserrat-SemiBold",
@@ -449,18 +465,20 @@ const styles = StyleSheet.create({
   statistics: { flex: 1, height: "100%" },
   modalOverlay: {
     position: "absolute",
-    width: "100%",
-    height: "100%",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
     alignItems: "center",
   },
   modalContent: {
     elevation: 10,
     borderRadius: 10,
-    width: "auto",
-    height: "auto",
+    width: 330,
     backgroundColor: Colors.primary,
     padding: 16,
-    marginVertical: "auto",
   },
   closeButton: {
     marginTop: 16,

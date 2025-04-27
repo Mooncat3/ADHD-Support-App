@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Text, TextInput, StyleSheet, Animated, Easing } from "react-native";
+import {
+  Text,
+  TextInput,
+  StyleSheet,
+  Animated,
+  Easing,
+  Platform,
+} from "react-native";
 import { Colors } from "@/constants/Colors";
 
 type Props = React.ComponentProps<typeof TextInput> & {
@@ -44,6 +51,7 @@ const TextField: React.FC<Props> = (props) => {
             borderColor: borderColor,
             color: textColor,
           },
+          getInputStyles(),
           style,
         ]}
         ref={inputRef}
@@ -103,6 +111,13 @@ const TextField: React.FC<Props> = (props) => {
   );
 };
 
+const getInputStyles = () => {
+  return {
+    paddingTop: Platform.OS === "ios" ? 20 : 0,
+    height: Platform.OS === "ios" ? 60 : 50,
+  };
+};
+
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
@@ -110,7 +125,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     fontFamily: "Montserrat-Regular",
     fontSize: 16,
-    height: 50,
     paddingBottom: 5,
     backgroundColor: Colors.primary,
     textAlignVertical: "bottom",
