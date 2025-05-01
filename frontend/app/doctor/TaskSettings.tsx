@@ -27,7 +27,8 @@ const TaskSettings = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [errMsg, setErrMsg] = useState<string>();
 
-  const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
+  const lastnameStr = lastname ? `${lastname[0]}.` : ``;
+  const formattedFirstName = `${surname} ${firstname[0]}. ${lastnameStr}`;
 
   useEffect(() => {
     api

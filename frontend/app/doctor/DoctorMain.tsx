@@ -59,7 +59,8 @@ const DoctorMain: React.FC = () => {
       .then((user) => {
         if (user) {
           setDoctorId(user.id);
-          const formattedFirstName = `${user.surname} ${user.firstname[0]}. ${user.lastname[0]}.`;
+          const lastname = user.lastname ? `${user.lastname[0]}.` : ``;
+          const formattedFirstName = `${user.surname} ${user.firstname[0]}. ${lastname}`;
           setHeaderUserName(formattedFirstName);
         }
       })

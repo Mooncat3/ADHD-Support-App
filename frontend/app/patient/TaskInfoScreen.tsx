@@ -29,7 +29,7 @@ interface User {
   id: string;
   activity: ActivityData;
   firstname: string;
-  lastname: string;
+  lastname: string | undefined | null;
   surname: string;
 }
 
@@ -59,7 +59,9 @@ const TaskInfoScreen: React.FC = () => {
   const [user, setUser] = useState<User>();
 
   const processUserData = (userData: User) => {
-    const formattedFirstName = `${userData.surname} ${userData.firstname[0]}. ${userData.lastname[0]}.`;
+    const lastnameStr = userData.lastname ? `${userData.lastname[0]}.` : ``;
+    const formattedFirstName = `${userData.surname} ${userData.firstname[0]}. ${lastnameStr}`;
+
     setHeaderUserName(formattedFirstName);
 
     if (!userData.activity || !userData.activity?.selected_time)
