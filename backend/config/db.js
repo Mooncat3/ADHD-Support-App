@@ -1,7 +1,7 @@
 import pkg from "pg";
-import { configDotenv } from "dotenv";
+import { config } from "dotenv";
 
-configDotenv();
+config({ override: true });
 
 const { Pool } = pkg;
 

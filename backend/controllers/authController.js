@@ -56,4 +56,4 @@ const role = async (req, res) => {
   return res.status(200).json({ role: req.userRole });
 };
 
-export { login, refresh, role };
+export { login, refresh, role, generateTokens };

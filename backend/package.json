@@ -11,11 +11,31 @@
     "express": "4.21.2",
     "express-session": "1.18.1",
     "jsonwebtoken": "9.0.2",
-    "nodemailer": "^6.10.0",
+    "nodemailer": "6.10.0",
     "pdfkit": "0.16.0",
     "pg": "8.14.1"
   },
   "scripts": {
-    "start": "node --experimental-detect-module server.js"
+    "start": "node --experimental-detect-module server.js",
+    "test": "jest --verbose"
+  },
+  "babel": {
+    "presets": ["@babel/preset-env"]
+  },
+  "jest": {
+    "transformIgnorePatterns": ["node_modules/(?!(sucrase)/)"],
+    "transform": {
+      "^.+\\.(js|jsx|ts|tsx|mjs)$": "babel-jest"
+    },
+    "setupFiles": ["dotenv/config"]
+  },
+  "devDependencies": {
+    "@babel/core": "7.27.1",
+    "@babel/preset-env": "7.27.1",
+    "@jest/globals": "29.7.0",
+    "babel-jest": "29.7.0",
+    "babel-node": "0.0.1-security",
+    "jest": "29.7.0",
+    "supertest": "7.1.0"
   }
 }

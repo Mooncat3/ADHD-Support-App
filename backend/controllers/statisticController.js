@@ -41,7 +41,7 @@ export const getStatistics = async (req, res, next) => {
   try {
     const userStatistics = await fetchUserStat(patientId, startDate, endDate);
 
-    if (userStatistics) {
+    if (userStatistics.length) {
       console.log(userStatistics);
       return res.status(200).json(userStatistics);
     } else {
