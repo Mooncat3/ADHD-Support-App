@@ -27,10 +27,18 @@ export const fetchUserStat = async (
   );
 
   const userStatistics = request.rows;
-  if (userStatistics.length > 0)
-    return locale
-      ? userStatToLocale(userStatistics, startDate, endDate)
-      : userStatistics;
+  if (userStatistics.length) {
+    if (locale) {
+      const userStatLocale = userStatToLocale(
+        userStatistics,
+        startDate,
+        endDate
+      );
+      if (userStatLocale.length) return userStatLocale;
+      return null;
+    }
+    return userStatistics;
+  }
   return null;
 };
 
