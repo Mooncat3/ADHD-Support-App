@@ -34,7 +34,9 @@ const PatientInfo = () => {
   const handlePatientAssignments = () => {
     router.push({ pathname: "/doctor/TaskSettings", params });
   };
-  const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
+
+  const lastnameStr = lastname ? `${lastname[0]}.` : ``;
+  const formattedFirstName = `${surname} ${firstname[0]}. ${lastnameStr}`;
 
   return (
     <View style={styles.container}>

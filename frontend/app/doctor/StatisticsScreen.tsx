@@ -202,7 +202,8 @@ const StatisticsScreen: React.FC = () => {
     setModalVisible(false);
   };
 
-  const formattedFirstName = `${surname} ${firstname[0]}. ${lastname[0]}.`;
+  const lastnameStr = lastname ? `${lastname[0]}.` : ``;
+  const formattedFirstName = `${surname} ${firstname[0]}. ${lastnameStr}`;
 
   const getMarkedDates = (range: { start: string; end: string }) => {
     const markedDates: Record<string, any> = {};
