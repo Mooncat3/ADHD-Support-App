@@ -159,19 +159,6 @@ describe(`GET ${api}/doctor/patients`, () => {
     expect(res.statusCode).toBe(404);
     expect(res.body).toEqual({ detail: "No patients found for this doctor" });
   });
-
-    it('возвращает 404 если данных о пациентах врача нет', async () => {
-    pool.query
-    .mockResolvedValueOnce({})
-    .mockResolvedValueOnce({ rows: [] });
-
-    const res = await request(server)
-      .get(`${api}/doctor/patients`)
-      .set('Authorization', `Bearer ${token}`);
-
-    expect(res.statusCode).toBe(404);
-    expect(res.body).toEqual({ detail: "No patients found for this doctor" });
-  });
 });
 
 describe(`POST ${api}/doctor/register`, () => {

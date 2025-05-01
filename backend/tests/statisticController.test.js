@@ -155,7 +155,7 @@ describe(`POST ${api}/statistic/file/:patientId`, () => {
       expect(firstBytes).toBe(pdfSignature);
     });
 
-    it('возвращает pdf-файл статистики пациента при наличии', async () => {
+    it('возвращает 404 если статистики пациента за период нет', async () => {
       pool.query
       .mockResolvedValueOnce({})
       .mockResolvedValueOnce({ rows: [
@@ -181,15 +181,8 @@ describe(`POST ${api}/statistic/file/:patientId`, () => {
         .post(`${api}/statistic/file/e7bf5e23-3fc1-4a2d-924e-4ec3c0eeee25`)
         .send({ startDate: '2020-04-28T00:00:00.000Z', endDate: '2025-04-28T00:00:00.000Z', timezone: 0 })
         .set('Authorization', `Bearer ${token}`)
-        .set('Accept', 'application/pdf')
-        .expect('Content-Type', /pdf/)
   
-        expect(res.statusCode).toBe(200);
-        expect(res.body instanceof Buffer);
-  
-        const pdfSignature = '%PDF-';
-        const firstBytes = res.body.toString('utf8', 0, 5);
-    
-        expect(firstBytes).toBe(pdfSignature);
+        expect(res.statusCode).toBe(404);
+        expect(res.body).toEqual({ detail: "Statistics do not exist" });
       });
 });
