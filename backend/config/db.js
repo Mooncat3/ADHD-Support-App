@@ -11,9 +11,6 @@ const pool = new Pool({
   database: process.env.POSTGRE_DATABASE,
   password: process.env.POSTGRE_PASSWORD,
   port: process.env.POSTGRE_PORT,
-  ssl: {
-    rejectUnauthorized: true,
-  },
 });
 
 export default pool;
