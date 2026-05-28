@@ -1,11 +1,13 @@
-import pool from "../config/db.js";
+import bcrypt from "bcrypt";
+import { withUserContext } from "../config/db.js";
 
 export const get = async (req, res, next) => {
   try {
     const doctorId = req.userId;
 
-    await pool.query(`SET app.user_uuid = '${doctorId}'`);
-    const request = await pool.query("SELECT * FROM users_pub");
+    const request = await withUserContext(doctorId, (client) =>
+      client.query("SELECT * FROM users_pub")
+    );
 
     if (request.rows.length > 0)
       return res.status(200).json({ id: doctorId, ...request.rows[0] });
@@ -19,8 +21,9 @@ export const getPatients = async (req, res, next) => {
   try {
     const doctorId = req.userId;
 
-    await pool.query(`SET app.user_uuid = '${doctorId}'`);
-    const request = await pool.query(`SELECT * FROM patients_pub`);
+    const request = await withUserContext(doctorId, (client) =>
+      client.query("SELECT * FROM patients_pub")
+    );
 
     if (request.rows.length > 0) {
       return res.status(200).json(request.rows);
@@ -52,17 +55,24 @@ export const registerPatient = async (req, res, next) => {
 
     const doctorId = req.userId;
 
-    const request = await pool.query(
-      "SELECT user_register($1, $2, $3, $4, $5, $6, $7);",
-      [
-        doctorId,
-        username,
-        password,
-        email,
-        capitalize(firstName),
-        capitalize(secondName),
-        capitalize(patronymic),
-      ]
+    // Хэшируем пароль с солью на уровне Node.js (bcrypt, cost=12)
+    // до передачи в БД — исключает хранение открытого текста и
+    // устраняет уязвимость хэширования без соли
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const request = await withUserContext(doctorId, (client) =>
+      client.query(
+        "SELECT user_register($1, $2, $3, $4, $5, $6, $7);",
+        [
+          doctorId,
+          username,
+          hashedPassword,
+          email,
+          capitalize(firstName),
+          capitalize(secondName),
+          capitalize(patronymic),
+        ]
+      )
     );
 
     const result = request.rows[0].user_register;
@@ -86,8 +96,9 @@ export const getActivity = async (req, res, next) => {
   const { patientId } = req.params;
 
   try {
-    await pool.query(`SET app.user_uuid = '${patientId}'`);
-    const request = await pool.query(`SELECT activity FROM users_pub`);
+    const request = await withUserContext(patientId, (client) =>
+      client.query("SELECT activity FROM users_pub")
+    );
     if (request.rows.length > 0) return res.status(200).json(request.rows[0]);
     return res.status(404).json({ detail: "Activity do not exist" });
   } catch (err) {
@@ -101,9 +112,11 @@ export const putActivity = async (req, res, next) => {
     const { patientId } = req.params;
     const { activity } = req.body;
 
-    const request = await pool.query(
-      "SELECT activity_update($1, $2, $3, $4);",
-      [doctorId, patientId, activity.level, JSON.stringify(activity)]
+    const request = await withUserContext(doctorId, (client) =>
+      client.query(
+        "SELECT activity_update($1, $2, $3, $4);",
+        [doctorId, patientId, activity.level, JSON.stringify(activity)]
+      )
     );
 
     if (request.rows.length > 0)
