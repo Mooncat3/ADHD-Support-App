@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     paddingHorizontal: 20,
-    position: "relative", // для корректного позиционирования модального окна
+    position: "relative",
   },
   formContent: {
     flexGrow: 1,
