@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import pool, { withUserContext } from "../config/db.js";
 import { createPdfDocument } from "../utilities/createPdfDocument.js";
 import { sendEmailWithAttachment } from "../utilities/emailSender.js";
 import userStatToLocale from "../utilities/userStatToLocale.js";
@@ -9,8 +9,6 @@ export const fetchUserStat = async (
   endDate,
   locale = true
 ) => {
-  await pool.query(`SET app.user_uuid = '${patientId}'`);
-
   const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
 
   const startDateDB = new Date(startDate);
@@ -21,12 +19,16 @@ export const fetchUserStat = async (
   const dbParams = locale
     ? [patientId, startDateDB.toISOString(), endDateDB.toISOString()]
     : [patientId, startDate, endDate];
-  const request = await pool.query(
-    "SELECT * FROM fetch_user_stat($1, $2, $3);",
-    dbParams
-  );
 
-  const userStatistics = request.rows;
+  // withUserContext обеспечивает изолированный SET/RESET на одном соединении
+  const userStatistics = await withUserContext(patientId, async (client) => {
+    const request = await client.query(
+      "SELECT * FROM fetch_user_stat($1, $2, $3);",
+      dbParams
+    );
+    return request.rows;
+  });
+
   if (userStatistics.length) {
     if (locale) {
       const userStatLocale = userStatToLocale(
@@ -45,12 +47,9 @@ export const fetchUserStat = async (
 export const getStatistics = async (req, res, next) => {
   const { patientId } = req.params;
   const { startDate, endDate } = req.query;
-  console.log(patientId, startDate, endDate);
   try {
     const userStatistics = await fetchUserStat(patientId, startDate, endDate);
-
     if (userStatistics) {
-      console.log(userStatistics);
       return res.status(200).json(userStatistics);
     } else {
       return res.status(404).json({ detail: "Statistic does not exist" });
@@ -64,10 +63,11 @@ const getPDF = async (patientId, startDate, endDate, timezone) => {
   const request_stat = await fetchUserStat(patientId, startDate, endDate);
 
   if (request_stat) {
-    await pool.query(`SET app.user_uuid = '${patientId}'`);
-    const request_meta = await pool.query(
-      "SELECT firstname, surname, lastname FROM users_pub;"
-    );
+    const request_meta = await withUserContext(patientId, async (client) => {
+      return client.query(
+        "SELECT firstname, surname, lastname FROM users_pub;"
+      );
+    });
 
     if (request_meta) {
       const meta = {

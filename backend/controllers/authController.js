@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import pool, { withUserContext } from "../config/db.js";
 import pkg from "jsonwebtoken";
 
 const { verify, sign } = pkg;
@@ -25,8 +25,10 @@ const login = async (req, res, next) => {
     if (userId === "Error: Invalid login or password")
       return res.status(400).json({ detail: "Invalid login or password" });
 
-    await pool.query(`SET app.user_uuid = '${userId}'`);
-    const request2 = await pool.query("SELECT role FROM users_pub");
+    // Используем withUserContext для изолированного SET/RESET
+    const request2 = await withUserContext(userId, (client) =>
+      client.query("SELECT role FROM users_pub")
+    );
     const userRole = request2.rows[0].role;
 
     const tokens = generateTokens({ id: userId, role: userRole });

@@ -66,7 +66,7 @@ const DoctorMain: React.FC = () => {
       })
       .catch((error) => {
         setError(checkCode(error.status));
-        console.error("Error getting user role:", error);
+        //console.error("Error getting user role:", error);
       });
   }, []);
 
@@ -85,7 +85,7 @@ const DoctorMain: React.FC = () => {
 
     if (Object.keys(filteredErrors).length === 0) {
       setModalType("register");
-      console.log(registrationData);
+      //console.log(registrationData);
     }
   };
 
@@ -95,14 +95,14 @@ const DoctorMain: React.FC = () => {
   const handleRegistrationConfirm = async () => {
     try {
       if (doctorId && registrationData) {
-        console.log("Данные регистрации:", { doctorId, ...registrationData });
+        //console.log("Данные регистрации:", { doctorId, ...registrationData });
         setIsLoading(true);
         const response = await api.registerPatient({
           doctorId: doctorId,
           ...registrationData,
         });
         if (response.status === "success") {
-          console.log("Успешная регистрация:", response);
+          //console.log("Успешная регистрация:", response);
           setIsLoading(false);
           showModal("confirmed");
         }

@@ -190,10 +190,10 @@ const TaskInfoScreen: React.FC = () => {
             );
           }
         } catch (error) {
-          console.error(
-            `Failed to send data for date ${localDateKeyStr}:`,
-            error
-          );
+          //console.error(
+          //  `Failed to send data for date ${localDateKeyStr}:`,
+          //  error
+          //);
         }
       }
 
@@ -205,7 +205,7 @@ const TaskInfoScreen: React.FC = () => {
         );
       else await AsyncStorage.removeItem(TASK_CACHE_KEY);
     } catch (error) {
-      console.error("Error in sendSeries:", error);
+      //console.error("Error in sendSeries:", error);
     }
   };
 

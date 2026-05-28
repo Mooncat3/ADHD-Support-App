@@ -1,4 +1,4 @@
-import pool from "../config/db.js";
+import { withUserContext } from "../config/db.js";
 import arraysEqual from "../utilities/arrayEquals.js";
 import { fetchUserStat } from "./statisticController.js";
 import generateLocaleTimestamp from "../utilities/generateLocaleTimestamp.js";
@@ -7,9 +7,10 @@ export const get = async (req, res, next) => {
   try {
     const patientId = req.userId;
 
-    await pool.query(`SET app.user_uuid = '${patientId}'`);
-    const request = await pool.query(
-      "SELECT firstname, surname, lastname, activity FROM users_pub"
+    const request = await withUserContext(patientId, (client) =>
+      client.query(
+        "SELECT firstname, surname, lastname, activity FROM users_pub"
+      )
     );
 
     if (request.rows.length > 0)
@@ -31,11 +32,13 @@ export const setAllStatistic = async (req, res, next) => {
     const patientId = req.userId;
 
     const query = `SELECT write_user_stat($1, $2, $3);`;
-    await pool.query(`SET app.user_uuid = '${patientId}'`);
 
-    const request = await pool.query(`SELECT activity FROM users_pub`);
-    if (request.rows.length > 0) {
-      const activity = request.rows[0].activity;
+    const activityResult = await withUserContext(patientId, (client) =>
+      client.query("SELECT activity FROM users_pub")
+    );
+
+    if (activityResult.rows.length > 0) {
+      const activity = activityResult.rows[0].activity;
 
       let stats = {
         time_stat: {},
@@ -74,13 +77,14 @@ export const setAllStatistic = async (req, res, next) => {
 
           if (elem.date !== current_date) {
             if (i !== 0) {
-              console.log(stats);
               if (await checkDateStatisticNotExist(elem.date, patientId)) {
-                await pool.query(query, [
-                  patientId,
-                  numToISOString(current_date),
-                  JSON.stringify(stats),
-                ]);
+                await withUserContext(patientId, (client) =>
+                  client.query(query, [
+                    patientId,
+                    numToISOString(current_date),
+                    JSON.stringify(stats),
+                  ])
+                );
               }
               stats = {
                 time_stat: {},
@@ -99,13 +103,14 @@ export const setAllStatistic = async (req, res, next) => {
           if (!!elem.is_utc_day_changed) stats.is_utc_day_changed = true;
 
           if (i === data.length - 1) {
-            console.log(stats);
             if (await checkDateStatisticNotExist(elem.date, patientId)) {
-              await pool.query(query, [
-                patientId,
-                numToISOString(current_date),
-                JSON.stringify(stats),
-              ]);
+              await withUserContext(patientId, (client) =>
+                client.query(query, [
+                  patientId,
+                  numToISOString(current_date),
+                  JSON.stringify(stats),
+                ])
+              );
             }
           }
         }

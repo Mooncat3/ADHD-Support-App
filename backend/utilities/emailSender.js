@@ -64,10 +64,10 @@ export async function sendEmailWithAttachment({
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent:", info.messageId);
+    //console.log("Email sent:", info.messageId);
     return info;
   } catch (err) {
-    console.error("Failed to send email:", err);
+    //console.error("Failed to send email:", err);
     throw err;
   }
 }

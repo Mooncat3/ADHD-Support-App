@@ -90,7 +90,7 @@ const AuthorizationForm: React.FC<RegistrationFieldsProps> = ({
         });
     } else {
       setIsLoading(false);
-      console.log("Validation errors:", filteredErrors);
+      //console.log("Validation errors:", filteredErrors);
     }
   };
 

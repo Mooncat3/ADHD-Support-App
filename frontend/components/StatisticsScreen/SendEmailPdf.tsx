@@ -34,7 +34,7 @@ export const handleSendStatistics = async (
     } else if (error.status === "404") {
       showError("У данного пациента нет статистики за этот период");
     } else {
-      console.log(error);
+      //console.log(error);
       showError("Ошибка при отправке статистики");
     }
     throw error;

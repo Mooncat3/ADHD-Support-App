@@ -24,7 +24,7 @@ export default function App() {
           "SpaceMono-Regular": require("@/assets/fonts/SpaceMono-Regular.ttf"),
         });
       } catch (e) {
-        console.warn(e);
+        //console.warn(e);
       } finally {
         setAppIsReady(true);
       }
